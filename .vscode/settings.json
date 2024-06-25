@@ -1,8 +1,0 @@
-{
-    "files.associations": {
-        "socket.h": "c",
-        "features.h": "c",
-        "iostream": "cpp",
-        "ostream": "cpp"
-    }
-}
