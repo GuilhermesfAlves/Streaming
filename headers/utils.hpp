@@ -13,5 +13,7 @@
 
 using namespace std;
 
+#define START_MARK 126
+
 
 #endif
