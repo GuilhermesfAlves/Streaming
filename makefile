@@ -16,7 +16,7 @@ client: MODE = client
 client: run
 
 run: all
-	./$(TARGET) $(MODE) 12345
+	sudo ./$(TARGET) $(MODE) 12345
 	@$(MAKE) --no-print-directory cleanobj
 
 all: $(TARGET)

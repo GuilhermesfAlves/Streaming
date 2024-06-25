@@ -1,4 +1,3 @@
-#include <sys/socket.h>
 #include <iostream>
 #include <cstring>  // para usar strcmp
 #include "../headers/client.hpp"
@@ -30,7 +29,7 @@ int main(int argc, char* argv[]) {
 
     // Exemplo de uso das macros definidas
     if (mode == CLIENT_MODE){
-        clientMethod(port);
+        clientMethod("127.0.0.1",port);
     } else if (mode == SERVER_MODE){
         serverMethod(port);
     }

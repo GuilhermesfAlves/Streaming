@@ -1,41 +1,74 @@
 #include "../headers/server.hpp"
 
-int serverMethod(int port){
-    int sockfd, newsockfd;
-    socklen_t clilen;
-    struct sockaddr_in serv_addr, cli_addr;
 
+int serverMethod(int port) {
+    int sockfd, newsockfd;
+    struct sockaddr_in server_addr, client_addr;
+    socklen_t client_len;
+    char buffer[1024];
+    const char *response = "Hello from TCP Server!";
+
+    // Cria um socket TCP
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) {
-        cerr << "Erro ao abrir o socket" << endl;
-        return -1;
+        cerr << "Erro ao criar socket" << endl;
+        exit(EXIT_FAILURE);
     }
 
-    memset(&serv_addr, 0, sizeof(serv_addr));
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_addr.s_addr = INADDR_ANY;
-    serv_addr.sin_port = htons(port);
+    // Configura o endereço do servidor
+    memset(&server_addr, 0, sizeof(server_addr));
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = INADDR_ANY; // O servidor escutará em qualquer IP disponível
+    server_addr.sin_port = htons(port);
 
-    if (bind(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
-        cerr << "Erro ao associar o socket" << endl;
+    // Associa o socket ao endereço e porta
+    if (bind(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
+        cerr << "Erro ao associar socket" << endl;
         close(sockfd);
-        return -1;
+        exit(EXIT_FAILURE);
     }
 
-    listen(sockfd, 5);
-    cout << "Servidor aguardando conexões na porta " << port << endl;
+    // Coloca o socket em modo de escuta
+    if (listen(sockfd, 5) < 0) {
+        cerr << "Erro ao colocar o socket em escuta" << endl;
+        close(sockfd);
+        exit(EXIT_FAILURE);
+    }
 
-    clilen = sizeof(cli_addr);
-    newsockfd = accept(sockfd, (struct sockaddr *)&cli_addr, &clilen);
+    cout << "Servidor em escuta na porta " << port << endl;
+
+    client_len = sizeof(client_addr);
+
+    // Aceita uma conexão de um cliente
+    newsockfd = accept(sockfd, (struct sockaddr *)&client_addr, &client_len);
     if (newsockfd < 0) {
         cerr << "Erro ao aceitar conexão" << endl;
         close(sockfd);
-        return -1;
+        exit(EXIT_FAILURE);
     }
 
-    cout << "Servidor aceitou uma conexão" << endl;
+    cout << "Cliente conectado" << endl;
+
+    // Recebe a mensagem do cliente
+    int len = recv(newsockfd, buffer, sizeof(buffer) - 1, 0);
+    if (len > 0) {
+        buffer[len] = '\0';
+        cout << "Mensagem recebida: " << buffer << endl;
+
+        // Envia uma resposta ao cliente
+        if (send(newsockfd, response, strlen(response), 0) < 0) {
+            cerr << "Erro ao enviar resposta" << endl;
+            close(newsockfd);
+            close(sockfd);
+            exit(EXIT_FAILURE);
+        }
+
+        cout << "Resposta enviada ao cliente" << endl;
+    } else {
+        cerr << "Erro ao receber mensagem" << endl;
+    }
+
     close(newsockfd);
     close(sockfd);
-
     return 0;
 }
