@@ -1,6 +1,6 @@
-#Trabalho 1 da matéria Redes de Computadores I
+# Trabalho 1 da matéria Redes de Computadores I
 
-##Streaming de video.
+## Streaming de video.
 
 Modo de uso:
 
