@@ -4,6 +4,6 @@
     #define CLIENT_MODE 2
     #include "utils.hpp"
 
-    int clientMethod(const char* server_ip, int port);
+    int clientMethod(int port);
 
 #endif

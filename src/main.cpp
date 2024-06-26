@@ -1,7 +1,5 @@
-#include <iostream>
-#include <cstring>  // para usar strcmp
-#include "../headers/client.hpp"
-#include "../headers/server.hpp"
+#include "headers/client.hpp"
+#include "headers/server.hpp"
 
 using namespace std;
 
@@ -29,7 +27,7 @@ int main(int argc, char* argv[]) {
 
     // Exemplo de uso das macros definidas
     if (mode == CLIENT_MODE){
-        clientMethod("127.0.0.1",port);
+        clientMethod(port);
     } else if (mode == SERVER_MODE){
         serverMethod(port);
     }

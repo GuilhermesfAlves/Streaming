@@ -4,15 +4,26 @@
 
 Modo de uso:
 
+Se você estiver em ambiente de desenvolvimento, ou seja, usando dois terminais na sua maquina execute:
+``` bash
+make dev
+```
+
+Se você estiver usando um ambiente de teste use, ou seja, com um cabo conectando diretamente duas máquinas:
+
+Ao usar este ambiente, assim que você executar o próximo script você necessita ter acesso ao Root do sistema.
+``` bash
+make prd
+```
 
 Primeiro você deve inicializar em um terminal o servidor.
 ```bash
-make server
+./script.sh server
 ```
 
 Depois você deverá inicializar o client.
 ```bash
-make client
+./script.sh client
 ```
 
 Assim você estabelecerá a conexão entre eles.

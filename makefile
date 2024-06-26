@@ -9,26 +9,23 @@ OBJECTS = $(SOURCES:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 TARGET = exec
 MODE = none
 
-server: MODE = server
-server: run
+dev: MODE = -D__DEV_MODE__
+dev: all
 
-client: MODE = client
-client: run
-
-run: all
-	sudo ./$(TARGET) $(MODE) 12345
-	@$(MAKE) --no-print-directory cleanobj
+prd: MODE = -D__PRD_MODE__
+prd: all
 
 all: $(TARGET)
+	@$(MAKE) --no-print-directory cleanobj
 
 $(TARGET): $(OBJECTS)
 	@$(CC) -o $@ $^
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@mkdir -p $(OBJ_DIR)
-	@$(CC) $(CFLAGS) -c $< -o $@ 
+	@$(CC) $(CFLAGS) -c $< -o $@ $(MODE)
 
-.PHONY: clean cleanobj client server run
+.PHONY: clean cleanobj
 
 clean: cleanobj
 	@rm -f $(TARGET)
