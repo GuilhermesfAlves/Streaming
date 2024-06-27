@@ -1,13 +1,12 @@
 #ifndef __STREAMING__
 #define __STREAMING__
 #include "utils.hpp"
+#include "socket.hpp"
 
 class Streaming{
 public:
     MySocket *socket;
-    Streaming(std::string log_name){
-        this -> socket = new MySocket(log_name);
-    }
+    Streaming(char* log_name): socket(new MySocket(log_name)){}
     virtual ~Streaming() = default;
 
     void virtual toConnect(int port) = 0;

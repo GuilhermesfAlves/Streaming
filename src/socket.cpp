@@ -1,43 +1,21 @@
 #include "headers/socket.hpp"
 
 
-void MySocket::log(const char* message, int len){
-    logger << message << "\t| " << len << "bytes\t| " << strerror(errno) << endl;
-}
+MySocket::MySocket(char* socketType) : sockfd(createSocket()), logger(new Logger(socketType)){
 
-void MySocket::log(const char* message){
-    log(message, 0);
-}
-
-void MySocket::output(const char* message){
-    cout << message << endl;
-}
-
-MySocket::MySocket(std::string socketType){
-    if ((this -> sockfd = createSocket()) < 0){
-        output("Build socket error");
-    }
-    this -> logger.open(socketType.append("_logger.log"));
-    if (!this -> logger.is_open()){
-        output("Error creating logger");
-        exit(EXIT_FAILURE);
-    }
-    logger << "Description \t| Size   \t| Status" << endl;
-    logger << "------------------------------------" << endl;
 }
 
 MySocket::~MySocket(){
     close(this -> sockfd);
-    this -> logger.close();
 }
 
 void MySocket::post(char* buffer){
     int len;
 
     if ((len = write(this -> sockfd, buffer, strlen(buffer))) < 0) {
-        log("Post failed", len);
+        logger -> log("Post failed", len);
     } else {
-        log("Packet posted", len);
+        logger -> log("Packet posted", len);
     }
 }
 
@@ -46,12 +24,38 @@ void MySocket::collect(char* buffer){
 
     memset(buffer, 0, BUFFER_SIZE);
     if ((len = read(this -> sockfd, buffer, BUFFER_SIZE)) < 0){
-        log("Collect failed", len);
+        logger -> log("Collect failed", len);
     } else {
-        log("Packet collected", len);
+        logger -> log("Packet collected", len);
     }
 }
 
 int MySocket::getSockfd(){
     return this -> sockfd;
 }
+
+#ifdef __PRD_MODE__
+
+int MySocket::createSocket(){
+    int sk;
+    if ((sk = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL))) < 0){
+        logger -> output("Build socket error");
+        exit(EXIT_FAILURE);
+    }
+    return sk;
+}
+
+#endif
+
+#ifdef __DEV_MODE__
+
+int MySocket::createSocket(){
+    int sk;
+    if ((sk = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP)) < 0){
+        logger -> output("Build socket error");
+        exit(EXIT_FAILURE);
+    }
+    return sk;
+}
+
+#endif

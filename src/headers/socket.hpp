@@ -7,7 +7,7 @@ class MySocket{
 private:
 
     int sockfd;
-    std::ofstream logger;
+    Logger* logger;
     
     void log(const char* message, int len);
 
@@ -15,9 +15,10 @@ private:
 
     void output(const char* message);
 
+    int createSocket();
 public:
 
-    MySocket(std::string socketType);
+    MySocket(char* socketType);
 
     ~MySocket();
 

@@ -14,7 +14,6 @@
 #include <linux/if_packet.h>
 #include <net/if.h>
 
-#include "socket.hpp"
 using namespace std;
 
 
@@ -25,9 +24,15 @@ using namespace std;
 #define START_MARK 126
 #define BUFFER_SIZE 64
 
-
-int createSocket();
-int createServerConnection(int sockfd, int port);
-int createClientConnection(int sockfd, int port);
+class Logger{
+private:
+    ofstream logFile;
+public:
+    Logger(const char* fileName);
+    ~Logger();
+    void log(const char* message, int len);
+    void log(const char* message);
+    void output(const char* message);
+};
 
 #endif
