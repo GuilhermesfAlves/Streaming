@@ -11,17 +11,20 @@
 //     char data[512];        // Dados da mensagem
 // };
 
-int serverMethod(int port) {
-    MySocket socket = MySocket(SERVER_SOCKET_STR);
-    char buffer[BUFFER_SIZE];
+    Server::Server() : Streaming("Server"){}
 
-    socket.toConnect(SERVER_MODE);
-  
-    socket.collect(buffer);
-    cout << "Mensagem recebida: "<< buffer << endl;
+    void Server::toConnect(int port){
+        createServerConnection(this -> socket -> getSockfd(), port);
+    }
 
-    strcpy(buffer,"Hello from server!");
-    socket.post(buffer);
+    int Server::run(){
+        char buffer[BUFFER_SIZE];
 
-    return 0;
-}
+        socket -> collect(buffer);
+        std::cout << "Mensagem recebida: "<< buffer << endl;
+
+        std::strcpy(buffer,"Hello from server!");
+        socket -> post(buffer);
+
+        return 0;
+    }

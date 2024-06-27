@@ -1,8 +1,14 @@
 #ifndef CLIENT
 #define CLIENT
 
-    #include "utils.hpp"
+    #include "streaming.hpp"
 
-    int clientMethod(int port);
+    class Client: public Streaming{
+    public:
+        Client();
+
+        void toConnect(int port) override;
+        int run() override;
+    };
 
 #endif

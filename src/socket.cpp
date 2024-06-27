@@ -52,19 +52,6 @@ void MySocket::collect(char* buffer){
     }
 }
 
-void MySocket::toConnect(int mode){
-    switch (mode){
-    case CLIENT_MODE:
-        if (!createClientConnection(this -> sockfd, DEFAULT_PORT)){
-            output("Failed to connect Server");
-            exit(EXIT_FAILURE);
-        }
-        break;
-    case SERVER_MODE:
-        if (!createServerConnection(this -> sockfd, DEFAULT_PORT)){
-            output("Failed to connect Server");
-            exit(EXIT_FAILURE);
-        }
-        break;
-    }
+int MySocket::getSockfd(){
+    return this -> sockfd;
 }

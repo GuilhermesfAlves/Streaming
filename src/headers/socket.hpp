@@ -25,7 +25,7 @@ public:
 
     void collect(char* buffer);
 
-    void toConnect(int mode);
+    int getSockfd();
 };
 
 #endif

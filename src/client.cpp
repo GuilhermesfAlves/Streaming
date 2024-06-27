@@ -1,19 +1,20 @@
 #include "headers/client.hpp"
 
+    Client::Client() : Streaming("Client"){}
 
-int clientMethod(int port) {
-    const char *message = "Hello, TCP Server!";
-    char buffer[BUFFER_SIZE];
-    MySocket sockfd = MySocket(CLIENT_SOCKET_STR);
+    void Client::toConnect(int port){
+        createClientConnection(this -> socket -> getSockfd(), port);
+    }
 
-    sockfd.toConnect(CLIENT_MODE);
+    int Client::run(){
+        const char *message = "Hello, TCP Server!";
+        char buffer[BUFFER_SIZE] = {0};
 
-    memcpy(buffer, message, strlen(message));
-    sockfd.post(buffer);
+        std::memcpy(buffer, message, strlen(message));
+        socket -> post(buffer);
 
-    sockfd.collect(buffer);
+        socket -> collect(buffer);
 
-    cout << "Mensagem recebida: "<< buffer << endl;
-    sockfd.~MySocket();
-    return 0;
-}
+        std::cout << "Mensagem recebida: " << buffer << endl;
+        return 0;
+    }

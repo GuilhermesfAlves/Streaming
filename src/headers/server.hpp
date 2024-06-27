@@ -1,8 +1,14 @@
 #ifndef SERVER
 #define SERVER
 
-    #include "utils.hpp"
+    #include "streaming.hpp"
 
-    int serverMethod(int port);
+    class Server: public Streaming{
+    public:
+        Server();
+
+        void toConnect(int port) override;
+        int run() override;
+    };
 
 #endif
