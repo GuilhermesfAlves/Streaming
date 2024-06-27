@@ -12,8 +12,8 @@ Logger::Logger(const char* fileName){
         exit(EXIT_FAILURE);
     }
 
-    log("Description \t| Size   \t| Status");
-    log("------------------------------------");
+    logFile << "Description \t| Size   \t| Status" << endl;
+    logFile << "------------------------------------" << endl;
 }
 
 Logger::~Logger(){

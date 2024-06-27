@@ -1,4 +1,5 @@
 # Trabalho 1 da matéria Redes de Computadores I
+Autor: Guilherme dos Santos Ferreira Alves
 
 ## Streaming de video.
 
@@ -9,12 +10,10 @@ Se você estiver em ambiente de desenvolvimento, ou seja, usando dois terminais 
 make dev
 ```
 
-Se você estiver usando um ambiente de teste use, ou seja, com um cabo conectando diretamente duas máquinas:
-
-Ao usar este ambiente, assim que você executar o próximo script você necessita ter acesso ao Root do sistema.
 ``` bash
 make prd
 ```
+Você necessita ter acesso ao Root do sistema.
 
 Primeiro você deve inicializar em um terminal o servidor.
 ```bash
@@ -43,12 +42,12 @@ O campo tipo pode ser:
 
 | bits | código |
 |:----------:|:---:|
-|`00000` | ack|
-|`00001` | nack|
-|`01010` | lista|
-|`01011` | baixar|
-|`10000` | mostra na tela|
-|`10001` | descritor arquivo|
+|`00000` | ack |
+|`00001` | nack |
+|`01010` | lista |
+|`01011` | baixar |
+|`10000` | mostra na tela |
+|`10001` | descritor arquivo |
 |`10010` | dados |
 |`11110` | fim tx |
 |`11111` | erro|

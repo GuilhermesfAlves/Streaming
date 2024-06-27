@@ -7,24 +7,20 @@ class MySocket{
 private:
 
     int sockfd;
-    Logger* logger;
     
-    void log(const char* message, int len);
-
-    void log(const char* message);
-
-    void output(const char* message);
-
     int createSocket();
 public:
+    Logger* logger;
 
     MySocket(char* socketType);
 
     ~MySocket();
 
-    void post(char* buffer);
+    void createConnection(sockaddr_in* addrToConnect);
+    void toBind(sockaddr_in* addrToBind);
+    int post(const char* buffer);
 
-    void collect(char* buffer);
+    int collect(char* buffer);
 
     int getSockfd();
 };

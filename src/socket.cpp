@@ -9,24 +9,41 @@ MySocket::~MySocket(){
     close(this -> sockfd);
 }
 
-void MySocket::post(char* buffer){
+int MySocket::post(const char* buffer){
     int len;
 
     if ((len = write(this -> sockfd, buffer, strlen(buffer))) < 0) {
         logger -> log("Post failed", len);
-    } else {
-        logger -> log("Packet posted", len);
+        return 0;
     }
+    logger -> log("Packet posted", len);
+    return 1;
 }
 
-void MySocket::collect(char* buffer){
+int MySocket::collect(char* buffer){
     int len;
 
     memset(buffer, 0, BUFFER_SIZE);
     if ((len = read(this -> sockfd, buffer, BUFFER_SIZE)) < 0){
         logger -> log("Collect failed", len);
-    } else {
-        logger -> log("Packet collected", len);
+        return 0;
+    }
+    logger -> log("Packet collected", len);
+    return 1;
+}
+
+
+void MySocket::createConnection(sockaddr_in* addrToConnect){
+    if (connect(sockfd, (struct sockaddr *)addrToConnect, sizeof(*addrToConnect)) < 0) {
+        logger -> output("Error: Can't connect");
+        exit(EXIT_FAILURE);
+    }
+}
+
+void MySocket::toBind(sockaddr_in* addrToConnect){
+    if (bind(sockfd, (struct sockaddr*) addrToConnect, sizeof(*addrToConnect)) < 0) {
+        logger -> output("Error: Can't Bind");
+        exit(EXIT_FAILURE);
     }
 }
 

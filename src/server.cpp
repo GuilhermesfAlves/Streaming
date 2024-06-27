@@ -11,40 +11,62 @@
 //     char data[512];        // Dados da mensagem
 // };
 
+int Server::run(){
+    char buffer[BUFFER_SIZE];
+
+    socket -> collect(buffer);
+    cout << "Mensagem recebida: "<< buffer << endl;
+
+    strcpy(buffer,"Hello from server!");
+    socket -> post(buffer);
+
+    return 0;
+}
+
+void Server::handshake(){
+    struct sockaddr_in clientAddress;
+    socklen_t len = sizeof(clientAddress);
+    char buffer[BUFFER_SIZE] = {0};
+    // Essa parte teria que mudar para fazer em RAW 
+    // ============================================
+    memset(&clientAddress, 0, sizeof(clientAddress));
+    if (recvfrom(socket -> getSockfd(), buffer, BUFFER_SIZE, 0, (struct sockaddr *)&clientAddress, &len) < 0){
+        cout << "Failed to recieve Handshake: " << strerror(errno) << endl;
+        exit(EXIT_FAILURE);
+    }
+    // Conecta o socket ao endereço do cliente para comunicação simplificada
+    socket -> createConnection(&clientAddress);
+    // ============================================
+    int pwd = atoi(buffer);
+    if (pwd == 0){
+        memset(buffer, 0, BUFFER_SIZE);
+        socket -> post(buffer);
+        socket -> logger -> output("Handshake Failed 1");
+        exit(EXIT_FAILURE);
+    }
+    sprintf (buffer, "%d", ++pwd);
+    socket -> post(buffer);
+    socket -> collect(buffer);
+    if (strcmp(buffer, PURE_ACK)){
+        socket -> logger -> output("Handshake Failed 2");
+        exit(EXIT_FAILURE);
+    }
+}
+
 Server::Server() : Streaming("Server"){}
 #ifdef __DEV_MODE__
 
 void Server::toConnect(int port){
-    int sockfd = socket -> getSockfd();
     struct sockaddr_in serverAddress;
-    struct sockaddr_in clientAddress;
-    int addrlen = sizeof(serverAddress);
-    char buffer[BUFFER_SIZE];
 
     serverAddress.sin_family = AF_INET;
     serverAddress.sin_addr.s_addr = INADDR_ANY;
     serverAddress.sin_port = htons(port);
 
     // Inicializa socket
-    if (bind(sockfd, (struct sockaddr*) &serverAddress, (socklen_t)addrlen) < 0) {
-        cerr << "Erro ao fazer bind no socket" << endl;
-        close(sockfd);
-        exit(EXIT_FAILURE);
-    }
-
-    memset(&clientAddress, 0, sizeof(clientAddress));
-    socklen_t len = sizeof(clientAddress);
-    int n = recvfrom(sockfd, buffer, BUFFER_SIZE, 0, (struct sockaddr *)&clientAddress, &len);
-    buffer[n] = '\0';
-    cout << "Cliente: " << buffer << endl;
-
-    // Conecta o socket ao endereço do cliente para comunicação simplificada
-    if (connect(sockfd, (struct sockaddr *)&clientAddress, len) < 0) {
-        cerr << "Erro ao conectar ao cliente" << endl;
-        close(sockfd);
-        exit(EXIT_FAILURE);
-    }
+    socket -> toBind(&serverAddress);
 }
+
 #endif
 
 #ifdef __PRD_MODE__
@@ -86,15 +108,3 @@ void Server::toConnect(int port){
 
 }
 #endif
-
-int Server::run(){
-    char buffer[BUFFER_SIZE];
-
-    socket -> collect(buffer);
-    std::cout << "Mensagem recebida: "<< buffer << endl;
-
-    std::strcpy(buffer,"Hello from server!");
-    socket -> post(buffer);
-
-    return 0;
-}

@@ -7,8 +7,9 @@
     public:
         Client();
 
-        void toConnect(int port) override;
         int run() override;
+        void handshake() override;
+        void toConnect(int port) override;
     };
 
 #endif

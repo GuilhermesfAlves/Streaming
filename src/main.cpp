@@ -36,6 +36,7 @@ int main(int argc, char* argv[]) {
     }
 
     mode -> toConnect(port);
+    mode -> handshake();
     mode -> run();
     return 0;
 }

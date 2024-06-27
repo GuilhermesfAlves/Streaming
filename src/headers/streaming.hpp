@@ -2,6 +2,7 @@
 #define __STREAMING__
 #include "utils.hpp"
 #include "socket.hpp"
+#define PURE_ACK "Ack"
 
 class Streaming{
 public:
@@ -11,6 +12,8 @@ public:
 
     void virtual toConnect(int port) = 0;
     int virtual run() = 0;
+    //Similar ao Triple Handshake do TCP
+    void virtual handshake() = 0;
 };
 
 
