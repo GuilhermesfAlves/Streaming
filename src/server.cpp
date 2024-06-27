@@ -15,7 +15,7 @@ int serverMethod(int port) {
     MySocket socket = MySocket(SERVER_SOCKET_STR);
     char buffer[BUFFER_SIZE];
 
-    socket.toConnect(SERVER_SOCKET_STR);
+    socket.toConnect(SERVER_MODE);
   
     socket.collect(buffer);
     cout << "Mensagem recebida: "<< buffer << endl;

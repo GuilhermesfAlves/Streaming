@@ -6,14 +6,14 @@ int clientMethod(int port) {
     char buffer[BUFFER_SIZE];
     MySocket sockfd = MySocket(CLIENT_SOCKET_STR);
 
-    sockfd.toConnect(CLIENT_SOCKET_STR);
+    sockfd.toConnect(CLIENT_MODE);
 
     memcpy(buffer, message, strlen(message));
     sockfd.post(buffer);
 
     sockfd.collect(buffer);
 
-    cout << "Mensagem recebida: "<< buffer << "." << endl;
+    cout << "Mensagem recebida: "<< buffer << endl;
     sockfd.~MySocket();
     return 0;
 }

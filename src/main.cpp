@@ -10,7 +10,7 @@ int main(int argc, char* argv[]) {
     // Verifica se há exatamente 3 argumentos
     if (argc != 3) {
         cerr << "Uso: " << argv[0] << " <modo = client | server> <porta de conexao, Ex: 12345>" << endl;
-        return -1;
+        exit(EXIT_FAILURE);
     }
 
     port = stoi(argv[2]);
@@ -22,15 +22,15 @@ int main(int argc, char* argv[]) {
         mode = SERVER_MODE;
     } else {
         cerr << "Modo desconhecido: " << argv[1] << endl;
-        return -1;
+        exit(EXIT_FAILURE);
     }
 
-    // Exemplo de uso das macros definidas
-    if (mode == CLIENT_MODE){
-        clientMethod(port);
-    } else if (mode == SERVER_MODE){
-        serverMethod(port);
-    }
-
-    return 0;
+    switch (mode){
+    case CLIENT_MODE:
+        return clientMethod(port);
+    case SERVER_MODE:
+        return serverMethod(port);
+    default:
+        exit(EXIT_FAILURE);
+    }    
 }

@@ -25,7 +25,7 @@ public:
 
     void collect(char* buffer);
 
-    void toConnect(std::string socketType);
+    void toConnect(int mode);
 };
 
 #endif
