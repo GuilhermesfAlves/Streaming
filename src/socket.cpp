@@ -2,11 +2,11 @@
 
 
 void MySocket::log(const char* message, int len){
-    logger << message << " | " << len << " | " << strerror(errno) << endl;
+    logger << message << "\t| " << len << "bytes\t| " << strerror(errno) << endl;
 }
 
 void MySocket::log(const char* message){
-    logger << message << " | " << strerror(errno) << endl;
+    log(message, 0);
 }
 
 void MySocket::output(const char* message){
@@ -22,6 +22,8 @@ MySocket::MySocket(std::string socketType){
         output("Error creating logger");
         exit(EXIT_FAILURE);
     }
+    logger << "Description \t| Size   \t| Status" << endl;
+    logger << "------------------------------------" << endl;
 }
 
 MySocket::~MySocket(){
