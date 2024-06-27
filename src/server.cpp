@@ -12,28 +12,16 @@
 // };
 
 int serverMethod(int port) {
-    int sockfd;
-    int len;
+    MySocket socket = MySocket(SERVER_SOCKET_STR);
     char buffer[BUFFER_SIZE];
 
-    // Criação do socket raw
-    if (!createSocket(&sockfd)) {
-        cerr << "Erro ao criar socket" << endl;
-        return 1;
-    }
+    socket.toConnect(SERVER_SOCKET_STR);
+  
+    socket.collect(buffer);
+    cout << "Mensagem recebida: "<< buffer << endl;
 
-    if (!createServerConnection(&sockfd, port)){
-        cerr << "Erro ao conectar servidor" << endl;
-        return 1;
-    }
+    strcpy(buffer,"Hello from server!");
+    socket.post(buffer);
 
-    if ((len = recv(sockfd, buffer, BUFFER_SIZE, 0)) < 0){
-        cout << "Erro ao receber mensagem: " << len << endl;
-    } else {
-        buffer[len] = '\0';
-        cout << "Mensagem recebida: "<< buffer << endl;
-    }
-
-    close(sockfd);
     return 0;
 }
