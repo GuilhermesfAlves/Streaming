@@ -1,0 +1,18 @@
+#ifndef __SLIDING_WINDOW__
+#define __SLIDING_WINDOW__
+
+#include "utils.hpp"
+#include "message.hpp"
+#include <list>
+
+#define WINDOW_SIZE 5
+
+
+class Window{
+private:
+    list<Message> window;
+public: 
+
+};
+
+#endif

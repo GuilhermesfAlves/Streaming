@@ -6,6 +6,9 @@
 #define CRC_POLYNOMIAL 0b00000111 //7
 
 
+unsigned int Message::sequence;
+char Message::crc_table[POSSIBLE_VALUES_OF_A_BYTE];
+
 int Message::deserializeMessage(const char type, const char* data){
     message = static_cast<msg_t*>(calloc(MAX_MESSAGE_SIZE, 1));
 
@@ -14,7 +17,7 @@ int Message::deserializeMessage(const char type, const char* data){
 
     message -> head = HEAD_MARK;
     message -> size = strlen(data);
-    message -> seq = sequence++;
+    message -> seq = Message::sequence++;
     message -> type = type;
     strcpy(message -> data, data);
     message -> m[strlen(message -> m)] = buildCrc();
@@ -26,6 +29,8 @@ int Message::serializeMessage(char* seq, char* type, char* data){
     *seq = message -> seq;
     *type = message -> type;
     strcpy(data, message -> data);
+
+    return 1;
 }
 
 int Message::isValidHead(){
@@ -54,8 +59,8 @@ int Message::isValidType(const char type){
     }
 }
 
-int Message::isValidSize(){
-    return (message -> size == strlen(message -> data));
+bool Message::isValidSize(){
+    return static_cast<bool>(static_cast<size_t>(message -> size) == strlen(message -> data));
 }
 
 int Message::isValidCrc(){
@@ -69,7 +74,7 @@ char Message::buildCrc(){
     char crc = 0;
 
     // i = 1, pois o crc não deve validar o HEAD
-    for (char i = 1; i < strlen(message -> m);i++)
+    for (int i = 1; i < static_cast<int>(strlen(message -> m)); i++)
         crc = crc_table[crc ^ message -> m[i]];
 
     return crc;
@@ -77,11 +82,12 @@ char Message::buildCrc(){
 
 Message::Message(){
     makeCrcTable();
+    Message::sequence = 0;
 }
 
 void Message::makeCrcTable(){
 
-    for (char i = 0; i < POSSIBLE_VALUES_OF_A_BYTE; ++i) {
+    for (int i = 0; i < POSSIBLE_VALUES_OF_A_BYTE; ++i) {
         char crc = i;
         for (char j = 0; j < SIZE_OF_BYTE_IN_BITS; ++j) {
             if (crc & MOST_SIGNIFICANT_BIT) {
@@ -90,6 +96,6 @@ void Message::makeCrcTable(){
                 crc <<= 1;
             }
         }
-        crc_table[i] = crc;
+        Message::crc_table[i] = crc;
     }
 }

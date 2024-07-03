@@ -1,3 +1,6 @@
+#ifndef __MESSAGE__
+#define __MESSAGE__
+
 #include "utils.hpp"
 
 #define POSSIBLE_VALUES_OF_A_BYTE 256
@@ -30,11 +33,11 @@ typedef union{
 
 class Message{
 private:
-    unsigned int static sequence;
     msg_t* message;
+    unsigned int static sequence;
     static char crc_table[POSSIBLE_VALUES_OF_A_BYTE];
-    Message();
 public:
+    Message();
     //construct message
     int deserializeMessage(const char type, const char* data);
     //desconstruct message
@@ -43,8 +46,10 @@ private:
     int isValidHead();
     int isValidType();
     int isValidType(const char type);
-    int isValidSize();
+    bool isValidSize();
     int isValidCrc();
     char buildCrc();
     void makeCrcTable();
 };
+
+#endif 
