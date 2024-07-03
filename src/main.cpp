@@ -3,7 +3,7 @@
 
 using namespace std;
 
-Streaming* modeFactory(char* mode){
+Streaming* streamingFactory(char* mode){
     if (!strcasecmp(mode, SERVER_SOCKET_STR)){
         return new Server();
     } else if (!strcasecmp(mode, CLIENT_SOCKET_STR))
@@ -29,14 +29,14 @@ int main(int argc, char* argv[]) {
         cerr << "invalid port, try one at the interval: [1024..65535]" << endl;
         exit(EXIT_FAILURE);
     }
-    Streaming* mode;
-    if (!(mode = modeFactory(argv[1]))){
+    Streaming* streaming;
+    if (!(streaming = streamingFactory(argv[1]))){
         cerr << "undefined mode, try <client> or <server>" << endl;
         exit(EXIT_FAILURE);
     }
 
-    mode -> toConnect(port);
-    mode -> handshake();
-    mode -> run();
+    streaming -> toConnect(port);
+    streaming -> handshake();
+    streaming -> run();
     return 0;
 }

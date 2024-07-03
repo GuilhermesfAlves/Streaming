@@ -21,7 +21,6 @@ using namespace std;
 #define SERVER_SOCKET_STR "Server"
 #define CLIENT_MODE 0
 #define SERVER_MODE 1
-#define START_MARK 126
 #define BUFFER_SIZE 64
 
 class Logger{
