@@ -1,12 +1,7 @@
 #include "headers/utils.hpp"
 
-Logger::Logger(const char* fileName){
-    char *tail = "_logger.log";
-    char newStr[strlen(fileName) + strlen(tail)];
-    strcpy(newStr, fileName);
-    strcat(newStr, tail);
-
-    logFile.open(newStr);
+Logger::Logger(string fileName){
+    logFile.open(fileName.append("_logger.log"));
     if (!logFile.is_open()){
         output("Error creating logger");
         exit(EXIT_FAILURE);

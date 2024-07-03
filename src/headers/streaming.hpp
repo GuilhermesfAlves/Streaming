@@ -7,7 +7,7 @@
 class Streaming{
 public:
     MySocket *socket;
-    Streaming(char* log_name): socket(new MySocket(log_name)){}
+    Streaming(string log_name): socket(new MySocket(log_name)){}
     virtual ~Streaming() = default;
 
     void virtual toConnect(int port) = 0;

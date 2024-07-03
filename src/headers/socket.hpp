@@ -12,7 +12,7 @@ private:
 public:
     Logger* logger;
 
-    MySocket(char* socketType);
+    MySocket(string socketType);
 
     ~MySocket();
 

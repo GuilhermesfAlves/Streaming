@@ -27,7 +27,7 @@ class Logger{
 private:
     ofstream logFile;
 public:
-    Logger(const char* fileName);
+    Logger(string fileName);
     ~Logger();
     void log(const char* message, int len);
     void log(const char* message);

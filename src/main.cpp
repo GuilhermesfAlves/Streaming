@@ -16,7 +16,7 @@ bool isValidPort(int port){
 }
 
 int main(int argc, char* argv[]) {
-    string executeTemplate = "Uso: ./exec <modo = client | server> <porta de conexao, Ex: 12345>"; 
+    string executeTemplate = "Use: ./exec <mode = client | server> <conection port, Ex: 12345>"; 
     int port;
     
     // Verifica se há exatamente 3 argumentos

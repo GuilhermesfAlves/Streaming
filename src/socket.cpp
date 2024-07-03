@@ -1,7 +1,7 @@
 #include "headers/socket.hpp"
 
 
-MySocket::MySocket(char* socketType) : sockfd(createSocket()), logger(new Logger(socketType)){
+MySocket::MySocket(string socketType) : sockfd(createSocket()), logger(new Logger(socketType)){
 
 }
 

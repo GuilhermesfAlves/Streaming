@@ -43,11 +43,11 @@ public:
     //desconstruct message
     int serializeMessage(char* seq, char* type, char* data);
 private:
-    int isValidHead();
-    int isValidType();
-    int isValidType(const char type);
+    bool isValidHead();
+    bool isValidType();
+    bool isValidType(const char type);
     bool isValidSize();
-    int isValidCrc();
+    bool isValidCrc();
     char buildCrc();
     void makeCrcTable();
 };

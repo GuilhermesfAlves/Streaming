@@ -33,15 +33,15 @@ int Message::serializeMessage(char* seq, char* type, char* data){
     return 1;
 }
 
-int Message::isValidHead(){
+bool Message::isValidHead(){
     return (message -> head == HEAD_MARK);
 }
 
-int Message::isValidType(){
+bool Message::isValidType(){
     return isValidType(message -> type);
 }
 
-int Message::isValidType(const char type){
+bool Message::isValidType(const char type){
     
     switch (type){
     case T_ACK:
@@ -53,9 +53,9 @@ int Message::isValidType(const char type){
     case T_DATA: 
     case T_END_TX:
     case T_ERROR:
-        return 1;
+        return true;
     default:
-        return 0;
+        return false;
     }
 }
 
@@ -63,7 +63,7 @@ bool Message::isValidSize(){
     return static_cast<bool>(static_cast<size_t>(message -> size) == strlen(message -> data));
 }
 
-int Message::isValidCrc(){
+bool Message::isValidCrc(){
     char expectedCrc = 0x00;
     char currentCrc = buildCrc();
     
