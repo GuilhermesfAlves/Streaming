@@ -18,7 +18,7 @@ public:
 
     void createConnection(sockaddr_in* addrToConnect);
     void toBind(sockaddr_in* addrToBind);
-    int post(const char* buffer);
+    int post(char* buffer);
 
     int collect(char* buffer);
 

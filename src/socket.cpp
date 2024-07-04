@@ -9,26 +9,23 @@ MySocket::~MySocket(){
     close(this -> sockfd);
 }
 
-int MySocket::post(const char* buffer){
-    int len;
-
-    if ((len = write(this -> sockfd, buffer, strlen(buffer))) < 0) {
-        logger -> log("Post failed", len);
+int MySocket::post(char* buffer){
+    if (write(this -> sockfd, buffer, strlen(buffer)) < 0) {
+        logger -> log(buffer);
         return 0;
     }
-    logger -> log("Packet posted", len);
+    logger -> log(buffer);
     return 1;
 }
 
 int MySocket::collect(char* buffer){
-    int len;
 
     memset(buffer, 0, BUFFER_SIZE);
-    if ((len = read(this -> sockfd, buffer, BUFFER_SIZE)) < 0){
-        logger -> log("Collect failed", len);
+    if (read(this -> sockfd, buffer, BUFFER_SIZE) < 0){
+        logger -> log(buffer);
         return 0;
     }
-    logger -> log("Packet collected", len);
+    logger -> log(buffer);
     return 1;
 }
 

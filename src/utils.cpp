@@ -7,7 +7,7 @@ Logger::Logger(string fileName){
         exit(EXIT_FAILURE);
     }
 
-    logFile << "Description \t| Size   \t| Status" << endl;
+    logFile << "Size \t| Sequence \t| Type \t| Data \t| Status" << endl;
     logFile << "------------------------------------" << endl;
 }
 
@@ -17,12 +17,9 @@ Logger::~Logger(){
     }
 }
 
-void Logger::log(const char* message, int len){
-    logFile << message << "\t| " << len << "bytes\t| " << strerror(errno) << endl;
-}
-
-void Logger::log(const char* message){
-    log(message, 0);
+void Logger::log(char* message){
+    msg_t* m = reinterpret_cast<msg_t*>(message);
+    logFile << m -> size << "\t| " << m -> seq << "\t| " << m -> type << "\t| " << m -> data << "\t| " << strerror(errno) << endl;
 }
 
 void Logger::output(const char* message){

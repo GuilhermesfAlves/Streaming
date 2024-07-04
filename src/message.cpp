@@ -9,11 +9,11 @@
 unsigned int Message::sequence;
 char Message::crc_table[POSSIBLE_VALUES_OF_A_BYTE];
 
-int Message::deserializeMessage(const char type, const char* data){
+msg_t* Message::deserializeMessage(const char type, const char* data){
     message = static_cast<msg_t*>(calloc(MAX_MESSAGE_SIZE, 1));
 
     if (!isValidType(type))
-        return 0;
+        return NULL;
 
     message -> head = HEAD_MARK;
     message -> size = strlen(data);
@@ -22,7 +22,7 @@ int Message::deserializeMessage(const char type, const char* data){
     strcpy(message -> data, data);
     message -> m[strlen(message -> m)] = buildCrc();
 
-    return 1;
+    return message;
 }
 
 int Message::serializeMessage(char* seq, char* type, char* data){
@@ -33,8 +33,8 @@ int Message::serializeMessage(char* seq, char* type, char* data){
     return 1;
 }
 
-bool Message::isValidHead(){
-    return (message -> head == HEAD_MARK);
+char* Message::getMessage(){
+    return message -> m;
 }
 
 bool Message::isValidType(){
@@ -57,10 +57,6 @@ bool Message::isValidType(const char type){
     default:
         return false;
     }
-}
-
-bool Message::isValidSize(){
-    return static_cast<bool>(static_cast<size_t>(message -> size) == strlen(message -> data));
 }
 
 bool Message::isValidCrc(){

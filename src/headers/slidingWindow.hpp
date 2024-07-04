@@ -8,11 +8,13 @@
 #define WINDOW_SIZE 5
 
 
-class Window{
+class SlidingWindow{
 private:
-    list<Message> window;
+    list<msg_t*> window;
+    list<msg_t*> queue;
 public: 
-
+    void update();
+    void add(msg_t* msg);
 };
 
 #endif

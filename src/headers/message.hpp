@@ -39,14 +39,13 @@ private:
 public:
     Message();
     //construct message
-    int deserializeMessage(const char type, const char* data);
+    msg_t* deserializeMessage(const char type, const char* data);
     //desconstruct message
     int serializeMessage(char* seq, char* type, char* data);
+    char* getMessage();
 private:
-    bool isValidHead();
     bool isValidType();
     bool isValidType(const char type);
-    bool isValidSize();
     bool isValidCrc();
     char buildCrc();
     void makeCrcTable();

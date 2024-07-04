@@ -14,6 +14,8 @@
 #include <linux/if_packet.h>
 #include <net/if.h>
 
+#include "message.hpp"
+
 using namespace std;
 
 
@@ -29,8 +31,7 @@ private:
 public:
     Logger(string fileName);
     ~Logger();
-    void log(const char* message, int len);
-    void log(const char* message);
+    void log(char* message);
     void output(const char* message);
 };
 

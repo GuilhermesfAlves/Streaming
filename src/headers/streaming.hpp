@@ -2,6 +2,7 @@
 #define __STREAMING__
 #include "utils.hpp"
 #include "socket.hpp"
+#include "slidingWindow.hpp"
 #define PURE_ACK "Ack"
 
 class Streaming{
