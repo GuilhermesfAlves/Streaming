@@ -7,6 +7,8 @@
 #define MAX_MESSAGE_SIZE 68
 #define MAX_DATA_SIZE 64
 
+#define HEAD_MARK 0b01111110 //126
+
 #define T_ACK 0b00000
 #define T_NACK 0b00001
 #define T_LIST 0b01010

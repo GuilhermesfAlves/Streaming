@@ -1,6 +1,5 @@
 #include "headers/message.hpp"
 
-#define HEAD_MARK 0b01111110 //126
 #define SIZE_OF_BYTE_IN_BITS 8
 #define MOST_SIGNIFICANT_BIT 0b10000000 //128
 #define CRC_POLYNOMIAL 0b00000111 //7
@@ -80,6 +79,7 @@ char Message::buildCrc(){
 }
 
 Message::Message(){
+    message = NULL;
     makeCrcTable();
     Message::sequence = 0;
 }
@@ -100,8 +100,10 @@ void Message::makeCrcTable(){
 }
 
 char* Message::getData(){
-    char *buffer = strndup(message -> data, message -> size);
-    return buffer;
+    if ((message -> m[message -> size + 3] != '\0') && (isValidCrc())){
+        message -> m[message -> size + 3] = '\0';
+    }
+    return message -> data;
 }
 
 char Message::getType(){
@@ -113,5 +115,8 @@ char Message::getSeq(){
 }
 
 void Message::setMessage(char* msg){
+    if (message){
+        free(message);
+    }
     message = (msg_t*)strdup(msg);
 }

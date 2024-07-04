@@ -14,14 +14,14 @@ MySocket::~MySocket(){
 void MySocket::post(char* buffer){
     write(this -> sockfd, buffer, strlen(buffer));
     logger -> log(buffer, TX);
+    strcpy(lastSent,buffer);
 }
 
 void MySocket::collect(char* buffer){
     do{
-        strcpy(lastSent, buffer);
         memset(buffer, 0, BUFFER_SIZE);
         read(this -> sockfd, buffer, BUFFER_SIZE);
-    } while (strcmp(lastSent, buffer));
+    } while ((!strcmp(lastSent, buffer)) || (buffer[0] != HEAD_MARK));
     strcpy(lastSent, buffer);
     logger -> log(buffer, RX);
 }
