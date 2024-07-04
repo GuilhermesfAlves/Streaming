@@ -4,20 +4,13 @@ Streaming::Streaming(string log_name): socket(new MySocket(log_name)){}
 
 void Streaming::toConnect(char* connection){
     int sockfd = socket -> getSockfd();
-    struct sockaddr_ll endereco = {0};
     struct packet_mreq mr = {0};
     int ifindex;
 
     ifindex = if_nametoindex(connection);
 
-    endereco.sll_family = AF_PACKET;
-    endereco.sll_protocol = htons(ETH_P_ALL);
-    endereco.sll_ifindex = ifindex;
     // Inicializa socket
-    if (bind(sockfd, (struct sockaddr*) &endereco, sizeof(endereco)) == -1) {
-        cerr << "Erro ao fazer bind no socket" << endl;
-        exit(EXIT_FAILURE);
-    }
+    socket -> toBind(ifindex);
 
     mr.mr_ifindex = ifindex;
     mr.mr_type = PACKET_MR_PROMISC;

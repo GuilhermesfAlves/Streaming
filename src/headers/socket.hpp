@@ -16,8 +16,7 @@ public:
 
     ~MySocket();
 
-    void createConnection(sockaddr_in* addrToConnect);
-    void toBind(sockaddr_in* addrToBind);
+    void toBind(int ifindex);
     void post(char* buffer);
     void collect(char* buffer);
 
