@@ -14,14 +14,17 @@ msg_t* Message::deserializeMessage(const char type, const char* data){
 
     if (!isValidType(type))
         return NULL;
-
     message -> head = HEAD_MARK;
-    message -> size = strlen(data);
-    message -> seq = Message::sequence++;
+    message -> seq = sequence++;
     message -> type = type;
-    strcpy(message -> data, data);
-    message -> m[strlen(message -> m)] = buildCrc();
-
+    if (data == NULL){
+        message -> size = 0;
+        message -> data[0] = buildCrc();
+        return message;
+    }
+    message -> size = strlen(data);
+    strncpy(message -> data, data, message -> size);
+    
     return message;
 }
 
@@ -94,4 +97,21 @@ void Message::makeCrcTable(){
         }
         Message::crc_table[i] = crc;
     }
+}
+
+char* Message::getData(){
+    char *buffer = strndup(message -> data, message -> size);
+    return buffer;
+}
+
+char Message::getType(){
+    return message -> type;
+}
+
+char Message::getSeq(){
+    return message -> seq;
+}
+
+void Message::setMessage(char* msg){
+    message = (msg_t*)strdup(msg);
 }

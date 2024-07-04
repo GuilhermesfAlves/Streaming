@@ -6,15 +6,15 @@
 #define MIN_PWD 1000
 
 int Client::run(){
-    const char *message = "Hello, TCP Server!";
     char buffer[BUFFER_SIZE] = {0};
+    Message m;
 
-    std::memcpy(buffer, message, strlen(message));
-    socket -> post(buffer);
+    m.deserializeMessage(T_PRINT, "Hello, TCP Server!");
+    socket -> post(m.getMessage());
 
     socket -> collect(buffer);
-
-    std::cout << "Mensagem recebida: " << buffer << endl;
+    m.setMessage(buffer);
+    cout << "Mensagem recebida: " << m.getData() << endl;
     return 0;
 }
 
@@ -22,17 +22,18 @@ void Client::handshake(){
     srand(static_cast<unsigned>(time(0)));
     int random_pwd = rand() % (MAX_PWD - MIN_PWD + 1);
     char buffer[BUFFER_SIZE] = {0};
-
+    Message m;
     sprintf (buffer, "%d", random_pwd);
-    socket -> post(buffer);
+    m.deserializeMessage(T_PRINT, buffer);
+    socket -> post(m.getMessage());
     socket -> collect(buffer);
-
-    if (atoi(buffer) != ++random_pwd){
+    m.setMessage(buffer);
+    if (atoi(m.getData()) != ++random_pwd){
         socket -> logger -> output("Handshake Failed");
         exit(EXIT_FAILURE);
     }
-    strcpy(buffer, PURE_ACK);
-    socket -> post(buffer);
+    m.deserializeMessage(T_ACK, NULL);
+    socket -> post(m.getMessage());
 }
 
 Client::Client() : Streaming("Client"){}

@@ -17,19 +17,24 @@
 #define T_END_TX 0b11110
 #define T_ERROR 0b11111
 
-
 typedef union{
     struct {
         char head;
-        char size : 6;
-        char seq : 5;
-        char type : 5;
+#pragma pack(push, 1)
+        union{
+            struct{
+                unsigned char size : 6;
+                unsigned char seq : 5;
+                unsigned char type : 5;
+                };
+            short sst;
+        };
+#pragma pack(pop)
         char data[MAX_DATA_SIZE];
         char crc; 
     };
     char m[MAX_MESSAGE_SIZE];
 } msg_t;
-
 
 class Message{
 private:
@@ -43,6 +48,10 @@ public:
     //desconstruct message
     int serializeMessage(char* seq, char* type, char* data);
     char* getMessage();
+    void setMessage(char* msg);
+    char* getData();
+    char getType();
+    char getSeq();
 private:
     bool isValidType();
     bool isValidType(const char type);

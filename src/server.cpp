@@ -3,12 +3,13 @@
 
 int Server::run(){
     char buffer[BUFFER_SIZE];
-
+    Message m;
     socket -> collect(buffer);
-    cout << "Mensagem recebida: "<< buffer << endl;
+    m.setMessage(buffer);
+    cout << "Mensagem recebida: " << m.getData() << endl;
 
-    strcpy(buffer,"Hello from server!");
-    socket -> post(buffer);
+    m.deserializeMessage(T_PRINT, "Hello from server!");
+    socket -> post(m.getMessage());
 
     return 0;
 }
@@ -17,6 +18,7 @@ void Server::handshake(){
     struct sockaddr_in clientAddress;
     socklen_t len = sizeof(clientAddress);
     char buffer[BUFFER_SIZE] = {0};
+    Message m;
     // Essa parte teria que mudar para fazer em RAW 
     // ============================================
     memset(&clientAddress, 0, sizeof(clientAddress));
@@ -27,7 +29,8 @@ void Server::handshake(){
     // Conecta o socket ao endereço do cliente para comunicação simplificada
     socket -> createConnection(&clientAddress);
     // ============================================
-    int pwd = atoi(buffer);
+    m.setMessage(buffer);
+    int pwd = atoi(m.getData());
     if (pwd == 0){
         memset(buffer, 0, BUFFER_SIZE);
         socket -> post(buffer);
@@ -35,9 +38,11 @@ void Server::handshake(){
         exit(EXIT_FAILURE);
     }
     sprintf (buffer, "%d", ++pwd);
-    socket -> post(buffer);
+    m.deserializeMessage(T_PRINT, buffer);
+    socket -> post(m.getMessage());
     socket -> collect(buffer);
-    if (strcmp(buffer, PURE_ACK)){
+    m.setMessage(buffer);
+    if (m.getType() != T_ACK){
         socket -> logger -> output("Handshake Failed 2");
         exit(EXIT_FAILURE);
     }

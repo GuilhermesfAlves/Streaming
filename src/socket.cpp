@@ -29,7 +29,6 @@ int MySocket::collect(char* buffer){
     return 1;
 }
 
-
 void MySocket::createConnection(sockaddr_in* addrToConnect){
     if (connect(sockfd, (struct sockaddr *)addrToConnect, sizeof(*addrToConnect)) < 0) {
         logger -> output("Error: Can't connect");

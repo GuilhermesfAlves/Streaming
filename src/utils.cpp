@@ -8,7 +8,7 @@ Logger::Logger(string fileName){
     }
 
     logFile << "Size \t| Sequence \t| Type \t| Data \t| Status" << endl;
-    logFile << "------------------------------------" << endl;
+    logFile << "-----------------------------------------------" << endl;
 }
 
 Logger::~Logger(){
@@ -18,8 +18,15 @@ Logger::~Logger(){
 }
 
 void Logger::log(char* message){
-    msg_t* m = reinterpret_cast<msg_t*>(message);
-    logFile << m -> size << "\t| " << m -> seq << "\t| " << m -> type << "\t| " << m -> data << "\t| " << strerror(errno) << endl;
+    msg_t* m = (msg_t*)(message);
+    char data[MAX_DATA_SIZE] = {0};
+    strncpy(data, m -> data, m -> size);
+
+    logFile << (int)(m -> size)\
+     << "\t| " << (int)(m -> seq)\
+      << "\t| " << (int)(m -> type)\
+       << "\t| " << data\
+        << "\t| " << strerror(errno) << endl;
 }
 
 void Logger::output(const char* message){
