@@ -2,10 +2,13 @@
 #define TX "Tx"
 #define RX "Rx"
 
-MySocket::MySocket(string socketType) : sockfd(createSocket()), logger(new Logger(socketType)){}
+MySocket::MySocket(string socketType) : sockfd(createSocket()), logger(new Logger(socketType)){
+    lastSent = (char*)calloc(MAX_MESSAGE_SIZE, 1);
+}
 
 MySocket::~MySocket(){
     close(this -> sockfd);
+    free(lastSent);
 }
 
 void MySocket::post(char* buffer){
@@ -14,8 +17,12 @@ void MySocket::post(char* buffer){
 }
 
 void MySocket::collect(char* buffer){
-    memset(buffer, 0, BUFFER_SIZE);
-    read(this -> sockfd, buffer, BUFFER_SIZE);
+    do{
+        strcpy(lastSent, buffer);
+        memset(buffer, 0, BUFFER_SIZE);
+        read(this -> sockfd, buffer, BUFFER_SIZE);
+    } while (strcmp(lastSent, buffer));
+    strcpy(lastSent, buffer);
     logger -> log(buffer, RX);
 }
 

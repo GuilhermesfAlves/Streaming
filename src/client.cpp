@@ -9,8 +9,6 @@ int Client::run(){
     socket -> post(m.getMessage());
 
     socket -> collect(buffer);
-    socket -> collect(buffer);
-    cout << buffer;
     m.setMessage(buffer);
     cout << "Mensagem recebida: " << m.getData() << endl;
     return 0;
