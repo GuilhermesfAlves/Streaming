@@ -39,8 +39,18 @@ void MySocket::toBind(int ifindex){
     }
 }
 
-int MySocket::getSockfd(){
-    return this -> sockfd;
+void MySocket::setSocketOpt(int ifindex){
+    struct packet_mreq mr = {0};
+
+    mr.mr_ifindex = ifindex;
+    mr.mr_type = PACKET_MR_PROMISC;
+    // Não joga fora o que identifica como lixo: Modo promíscuo
+    if (setsockopt(sockfd, SOL_PACKET, PACKET_ADD_MEMBERSHIP, &mr, sizeof(mr)) == -1) {
+        cerr << "Erro ao fazer setsockopt: "
+            "Verifique se a interface de rede foi especificada corretamente." << endl;
+        close(sockfd);
+        exit(EXIT_FAILURE);
+    }
 }
 
 int MySocket::createSocket(){

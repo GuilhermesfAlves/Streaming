@@ -100,9 +100,6 @@ void Message::makeCrcTable(){
 }
 
 char* Message::getData(){
-    if ((message -> m[message -> size + 3] != '\0') && (isValidCrc())){
-        message -> m[message -> size + 3] = '\0';
-    }
     return message -> data;
 }
 
@@ -119,4 +116,7 @@ void Message::setMessage(char* msg){
         free(message);
     }
     message = (msg_t*)strdup(msg);
+    if (isValidCrc()){
+        message -> m[message -> size + 3] = '\0';
+    }
 }

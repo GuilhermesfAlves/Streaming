@@ -9,7 +9,7 @@ Logger::Logger(string fileName){
     }
 
     logFile << "From \t| Size \t| Sequence \t| Type \t| Data \t| Status" << endl;
-    logFile << "--------------------------------------------" << endl;
+    logFile << "----------------------------------------------------" << endl;
 }
 
 Logger::~Logger(){
