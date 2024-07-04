@@ -1,3 +1,4 @@
 /.vscode
 exec
 *_logger.log
+/obj

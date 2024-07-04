@@ -7,17 +7,9 @@ OBJ_DIR = obj
 SOURCES = $(wildcard $(SRC_DIR)/*.cpp)
 OBJECTS = $(SOURCES:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 TARGET = exec
-MODE = none
 LOGGERS = *.log
 
-dev: MODE = -D__DEV_MODE__
-dev: all
-
-prd: MODE = -D__PRD_MODE__
-prd: all
-
 all: $(TARGET)
-	@$(MAKE) --no-print-directory cleanobj
 
 $(TARGET): $(OBJECTS)
 	@$(CC) -o $@ $^

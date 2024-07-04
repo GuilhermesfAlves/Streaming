@@ -4,25 +4,23 @@ Autor: Guilherme dos Santos Ferreira Alves
 ## Streaming de video.
 
 Modo de uso:
-
-Se você estiver em ambiente de desenvolvimento, ou seja, usando dois terminais na sua maquina execute:
-``` bash
-make dev
-```
-
-``` bash
-make prd
-```
 Você necessita ter acesso ao Root do sistema.
+
+``` bash
+make
+```
+`lo` para loopback, ou seja rodando numa mesma máquina
+`enp3s0` para se conectar com outra maquina por cabo
+
 
 Primeiro você deve inicializar em um terminal o servidor.
 ```bash
-./script.sh server
+./exec server <lo> | <enp3s0>
 ```
 
 Depois você deverá inicializar o client.
 ```bash
-./script.sh client
+./exec client <lo> | <enp3s0>
 ```
 
 Assim você estabelecerá a conexão entre eles.

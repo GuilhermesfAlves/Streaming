@@ -3,18 +3,15 @@
 #include "utils.hpp"
 #include "socket.hpp"
 #include "slidingWindow.hpp"
-#define PURE_ACK "Ack"
 
 class Streaming{
 public:
     MySocket *socket;
-    Streaming(string log_name): socket(new MySocket(log_name)){}
+    Streaming(string log_name);
     virtual ~Streaming() = default;
 
-    void virtual toConnect(int port) = 0;
+    void toConnect(char* connection);
     int virtual run() = 0;
-    //Similar ao Triple Handshake do TCP
-    void virtual handshake() = 0;
 };
 
 

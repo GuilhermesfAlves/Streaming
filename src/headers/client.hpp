@@ -8,8 +8,6 @@
         Client();
 
         int run() override;
-        void handshake() override;
-        void toConnect(int port) override;
     };
 
 #endif

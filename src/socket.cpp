@@ -9,24 +9,15 @@ MySocket::~MySocket(){
     close(this -> sockfd);
 }
 
-int MySocket::post(char* buffer){
-    if (write(this -> sockfd, buffer, strlen(buffer)) < 0) {
-        logger -> log(buffer);
-        return 0;
-    }
+void MySocket::post(char* buffer){
+    write(this -> sockfd, buffer, strlen(buffer));
     logger -> log(buffer);
-    return 1;
 }
 
-int MySocket::collect(char* buffer){
-
+void MySocket::collect(char* buffer){
     memset(buffer, 0, BUFFER_SIZE);
-    if (read(this -> sockfd, buffer, BUFFER_SIZE) < 0){
-        logger -> log(buffer);
-        return 0;
-    }
+    read(this -> sockfd, buffer, BUFFER_SIZE);
     logger -> log(buffer);
-    return 1;
 }
 
 void MySocket::createConnection(sockaddr_in* addrToConnect){
@@ -47,8 +38,6 @@ int MySocket::getSockfd(){
     return this -> sockfd;
 }
 
-#ifdef __PRD_MODE__
-
 int MySocket::createSocket(){
     int sk;
     if ((sk = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL))) < 0){
@@ -57,18 +46,3 @@ int MySocket::createSocket(){
     }
     return sk;
 }
-
-#endif
-
-#ifdef __DEV_MODE__
-
-int MySocket::createSocket(){
-    int sk;
-    if ((sk = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP)) < 0){
-        logger -> output("Build socket error");
-        exit(EXIT_FAILURE);
-    }
-    return sk;
-}
-
-#endif
