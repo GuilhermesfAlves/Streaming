@@ -1,4 +1,5 @@
 #include "headers/utils.hpp"
+#include <iomanip>
 
 Logger::Logger(string fileName){
     logFile.open(fileName.append("_logger.log"));
@@ -8,7 +9,7 @@ Logger::Logger(string fileName){
     }
 
     logFile << "Size \t| Sequence \t| Type \t| Data \t| Status" << endl;
-    logFile << "-----------------------------------------------" << endl;
+    logFile << "--------------------------------------------" << endl;
 }
 
 Logger::~Logger(){
@@ -22,9 +23,9 @@ void Logger::log(char* message){
     char data[MAX_DATA_SIZE] = {0};
     strncpy(data, m -> data, m -> size);
 
-    logFile << (int)(m -> size)\
-     << "\t| " << (int)(m -> seq)\
-      << "\t| " << (int)(m -> type)\
+    logFile << "\t" << setw(2) << setfill('0') << (int)(m -> size)\
+     << "\t| " << setw(2) << setfill('0') << (int)(m -> seq)\
+      << "\t| " << setw(2) << setfill('0') << (int)(m -> type)\
        << "\t| " << data\
         << "\t| " << strerror(errno) << endl;
 }
