@@ -12,18 +12,19 @@ MySocket::~MySocket(){
 }
 
 void MySocket::post(char* buffer){
-    write(this -> sockfd, buffer, strlen(buffer));
+    write(this -> sockfd, buffer, BUFFER_SIZE);
     logger -> log(buffer, TX);
     strcpy(lastSent,buffer);
 }
 
-void MySocket::collect(char* buffer){
-    do{
+char* MySocket::collect(char* buffer){
+    do {
         memset(buffer, 0, BUFFER_SIZE);
         read(this -> sockfd, buffer, BUFFER_SIZE);
     } while ((!strcmp(lastSent, buffer)) || (buffer[0] != HEAD_MARK));
     strcpy(lastSent, buffer);
     logger -> log(buffer, RX);
+    return buffer;
 }
 
 void MySocket::toBind(int ifindex){

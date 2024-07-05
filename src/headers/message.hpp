@@ -4,8 +4,8 @@
 #include "utils.hpp"
 
 #define POSSIBLE_VALUES_OF_A_BYTE 256
-#define MAX_MESSAGE_SIZE 68
-#define MAX_DATA_SIZE 64
+#define MAX_MESSAGE_SIZE 67
+#define MAX_DATA_SIZE 63
 
 #define HEAD_MARK 0b01111110 //126
 
@@ -19,24 +19,19 @@
 #define T_END_TX 0b11110
 #define T_ERROR 0b11111
 
+#pragma pack(push, 1)
 typedef union{
     struct {
         char head;
-#pragma pack(push, 1)
-        union{
-            struct{
-                unsigned char size : 6;
-                unsigned char seq : 5;
-                unsigned char type : 5;
-                };
-            short sst;
-        };
-#pragma pack(pop)
+        unsigned char size : 6;
+        unsigned char seq : 5;
+        unsigned char type : 5;
         char data[MAX_DATA_SIZE];
         char crc; 
     };
     char m[MAX_MESSAGE_SIZE];
 } msg_t;
+#pragma pack(pop)
 
 class Message{
 private:

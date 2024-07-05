@@ -9,6 +9,9 @@ unsigned int Message::sequence;
 char Message::crc_table[POSSIBLE_VALUES_OF_A_BYTE];
 
 msg_t* Message::deserializeMessage(const char type, const char* data){
+    if (message){
+        free(message);
+    }
     message = static_cast<msg_t*>(calloc(MAX_MESSAGE_SIZE, 1));
 
     if (!isValidType(type))

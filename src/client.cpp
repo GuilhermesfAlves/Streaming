@@ -5,11 +5,9 @@ int Client::run(){
     char buffer[BUFFER_SIZE] = {0};
     Message m;
 
-    m.deserializeMessage(T_PRINT, "Hello, TCP Server!");
-    socket -> post(m.getMessage());
+    socket -> post((char*)m.deserializeMessage(T_PRINT, "Hello from client!"));
 
-    socket -> collect(buffer);
-    m.setMessage(buffer);
+    m.setMessage(socket -> collect(buffer));
     cout << "Mensagem recebida: " << m.getData() << endl;
     return 0;
 }

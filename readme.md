@@ -4,6 +4,7 @@ Autor: Guilherme dos Santos Ferreira Alves
 ## Streaming de video.
 
 Modo de uso:
+Você necessita estar em um ambiente linux.
 Você necessita ter acesso ao Root do sistema.
 
 ``` bash
@@ -15,12 +16,12 @@ make
 
 Primeiro você deve inicializar em um terminal o servidor.
 ```bash
-./exec server <lo> | <enp3s0>
+sudo ./exec server <lo> | <enp3s0>
 ```
 
 Depois você deverá inicializar o client.
 ```bash
-./exec client <lo> | <enp3s0>
+sudo ./exec client <lo> | <enp3s0>
 ```
 
 Assim você estabelecerá a conexão entre eles.
@@ -30,8 +31,8 @@ Mensagem à ser transmitida:
 
 | Marcador de Inicio | Tamanho em bytes | Sequência | Tipo | Dados | CRC-8 |
 |:------------------:|:----------------:|:---------:|:----:|:-----:|:-----:|
-| 8 bits             | 6 bits           | 5 bits    | 5 bits| 0-64 bytes | 8 bits |
-| 1 byte             |        ->        | 2 bytes   |  <-   | 0-64 bytes | 1 byte |
+| 8 bits             | 6 bits           | 5 bits    | 5 bits| 0-63 bytes | 8 bits |
+| 1 byte             |        ->        | 2 bytes   |  <-   | 0-63 bytes | 1 byte |
 
 
 O marcador de inicio sempre será `0111 1110`

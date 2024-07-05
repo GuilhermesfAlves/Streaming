@@ -16,7 +16,7 @@ public:
     //set socket as PROMISC
     void setSocketOpt(int ifindex);
     void post(char* buffer);
-    void collect(char* buffer);
+    char* collect(char* buffer);
 };
 
 #endif
