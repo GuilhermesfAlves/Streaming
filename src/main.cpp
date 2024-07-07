@@ -8,7 +8,7 @@ Streaming* streamingFactory(char* mode){
         return new Server();
     } else if (!strcasecmp(mode, CLIENT_SOCKET_STR))
         return new Client();
-    return nullptr;
+    return NULL;
 }
 
 bool isValidConnection(char* connection){
@@ -31,6 +31,5 @@ int main(int argc, char* argv[]) {
     }
 
     streaming -> toConnect(argv[2]);
-    streaming -> run();
-    return 0;
+    return streaming -> run();
 }

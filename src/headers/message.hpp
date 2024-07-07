@@ -4,20 +4,26 @@
 #include "utils.hpp"
 
 #define POSSIBLE_VALUES_OF_A_BYTE 256
+
 #define MAX_MESSAGE_SIZE 67
 #define MAX_DATA_SIZE 63
 
+#define INEXISTENT_FRAME 32
+#define MAX_FRAME 31
+#define MIN_FRAME 0
+
 #define HEAD_MARK 0b01111110 //126
 
-#define T_ACK 0b00000
-#define T_NACK 0b00001
-#define T_LIST 0b01010
-#define T_DOWNLOAD 0b01011
-#define T_PRINT 0b10000
-#define T_FILE_DESCRIPTOR 0b10001
-#define T_DATA 0b10010
-#define T_END_TX 0b11110
-#define T_ERROR 0b11111
+#define T_ACK 0b00000 //0
+#define T_NACK 0b00001 //1
+#define T_LIST 0b01010 //10
+#define T_DOWNLOAD 0b01011 //11
+#define T_PRINT 0b10000 //16
+#define T_FILE_DESCRIPTOR 0b10001 //17
+#define T_DATA 0b10010 //18
+#define T_END_TX 0b11110 //30
+#define T_ERROR 0b11111 //31
+#define T_INEXISTENT 32
 
 #pragma pack(push, 1)
 typedef union{

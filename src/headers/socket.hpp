@@ -14,7 +14,8 @@ public:
     //bind socket to read and write on <lo> or <enp3s0>
     void toBind(int ifindex);
     //set socket as PROMISC
-    void setSocketOpt(int ifindex);
+    void setSocketPromisc(int ifindex);
+    void setSocketTimeout(int timeoutMillis);
     void post(char* buffer);
     char* collect(char* buffer);
 };

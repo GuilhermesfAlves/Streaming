@@ -1,7 +1,7 @@
 #ifndef __SLIDING_WINDOW__
 #define __SLIDING_WINDOW__
 
-#include "utils.hpp"
+#include "socket.hpp"
 #include "message.hpp"
 #include <list>
 
@@ -12,9 +12,24 @@ class SlidingWindow{
 private:
     list<msg_t*> window;
     list<msg_t*> queue;
+    list<msg_t*> collected;
+    Message message;
+    MySocket socket;
+    char lastCollected;
+    void sendWindow();
+    void refillWindow();
+    long long timestamp();
+    char* isNotInWindow(char* message);
 public: 
+    SlidingWindow(string socketType);
+    void connect(int ifindex);
+    int empty();
+    int collectedEmpty();
     void update();
-    void add(msg_t* msg);
+    void add(char type, const char* msg);
+    int getWindow();
+    int getResponse();
+    void respond(char type, int seq);
 };
 
 #endif

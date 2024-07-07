@@ -19,6 +19,9 @@ Logger::~Logger(){
 }
 
 void Logger::log(char* message, const char* from){
+    // if (!strlen(message))
+    //     return;
+
     msg_t* m = (msg_t*)(message);
     char data[MAX_DATA_SIZE] = {0};
     strncpy(data, m -> data, m -> size);

@@ -13,12 +13,12 @@
 #include <net/ethernet.h>
 #include <linux/if_packet.h>
 #include <net/if.h>
-
+#include <sys/time.h>
 #include "message.hpp"
 
 using namespace std;
 
-
+#define DEFAULT_TIMEOUT 500
 #define CLIENT_SOCKET_STR "Client"
 #define SERVER_SOCKET_STR "Server"
 #define CLIENT_MODE 0

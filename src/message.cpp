@@ -9,9 +9,6 @@ unsigned int Message::sequence;
 char Message::crc_table[POSSIBLE_VALUES_OF_A_BYTE];
 
 msg_t* Message::deserializeMessage(const char type, const char* data){
-    if (message){
-        free(message);
-    }
     message = static_cast<msg_t*>(calloc(MAX_MESSAGE_SIZE, 1));
 
     if (!isValidType(type))
@@ -103,23 +100,39 @@ void Message::makeCrcTable(){
 }
 
 char* Message::getData(){
+    if (!message)
+        return strdup("32");
     return message -> data;
 }
 
 char Message::getType(){
+    if (!message)
+        return T_INEXISTENT;
     return message -> type;
 }
 
 char Message::getSeq(){
+    if (!message)
+        return INEXISTENT_FRAME;
     return message -> seq;
 }
 
 void Message::setMessage(char* msg){
-    if (message){
-        free(message);
+    if (!strlen(msg)){
+        cout << "mensagem vazia" << endl;
+        if (message){
+            free(message);
+            message = NULL;
+        }
+        return;
     }
+
     message = (msg_t*)strdup(msg);
-    if (isValidCrc()){
+    if (isValidCrc() && isValidType()){
+        cout << "is valid message" << endl; 
         message -> m[message -> size + 3] = '\0';
+    } else {
+        free(message);
+        message = NULL;
     }
 }
