@@ -38,8 +38,9 @@ void SlidingWindow::refillWindow(){
 
 void SlidingWindow::sendWindow(){
     for (msg_t* m : window){
-        cout << "sending window" << endl;
-        socket.post(m -> m);
+        cout << "sending window: " << m -> m << "." << endl;
+        socket.post(m -> m, (size_t) m -> size + 4);
+        cout << "crc on post: "<<(int)(unsigned char) m -> m[m -> size + 4] << endl;
     }
 }
 
@@ -132,7 +133,8 @@ void SlidingWindow::respond(char type, int frame){
 
     cout << "responding type: " << (int) type << " / frame: " << frame << endl;
     sprintf(buffer, "%d", frame);
-    socket.post((char*)message.deserializeMessage(type, buffer));    
+    char* respond = (char*)message.deserializeMessage(type, buffer);
+    socket.post(respond, (size_t) message.getMessageSize());    
 }
 
 long long SlidingWindow::timestamp() {

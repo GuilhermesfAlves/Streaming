@@ -6,7 +6,7 @@
 
 
 unsigned int Message::frameCounter;
-char Message::crc_table[POSSIBLE_VALUES_OF_A_BYTE];
+unsigned char Message::crc_table[POSSIBLE_VALUES_OF_A_BYTE];
 
 msg_t* Message::deserializeMessage(const char type, const char* data){
     message = static_cast<msg_t*>(calloc(MAX_MESSAGE_SIZE, 1));
@@ -18,11 +18,13 @@ msg_t* Message::deserializeMessage(const char type, const char* data){
     message -> type = type;
     if (data == NULL){
         message -> size = 0;
-        message -> data[0] = buildCrc();
+        message -> data[0] = buildCrc(message -> size + 3);
         return message;
     }
     message -> size = strlen(data);
     strncpy(message -> data, data, message -> size);
+    message -> data[message -> size] = buildCrc(message -> size + 3);
+    cout << (int) (unsigned char)message -> data[message -> size + 1] << endl;
     
     return message;
 }
@@ -64,17 +66,20 @@ bool Message::isValidType(const char type){
 
 bool Message::isValidCrc(){
     char expectedCrc = 0x00;
-    char currentCrc = buildCrc();
+    unsigned char currentCrc = buildCrc(message -> size + 4);
+    cout << "current crc: " << (int) currentCrc << endl;
     cout << "is valid crc: " << (expectedCrc == currentCrc) << endl;
     return (expectedCrc == currentCrc);
 }
 
-char Message::buildCrc(){
-    char crc = 0;
+char Message::buildCrc(int size){
+    unsigned char crc = 0;
 
     // i = 1, pois o crc não deve validar o HEAD
-    for (int i = 1; i < getMessageSize(); i++)
-        crc = crc_table[crc ^ message -> m[i]];
+    cout << "tam:" << size << endl;
+    for (int i = 1; i < size; i++){
+        crc = crc_table[(unsigned char)crc ^ (unsigned char)message -> m[i]];
+    }
 
     return crc;
 }
@@ -82,13 +87,13 @@ char Message::buildCrc(){
 Message::Message(){
     message = NULL;
     makeCrcTable();
-    Message::frameCounter = 0;
+    frameCounter = 0;
 }
 
 void Message::makeCrcTable(){
 
     for (int i = 0; i < POSSIBLE_VALUES_OF_A_BYTE; ++i) {
-        char crc = i;
+        unsigned char crc = i;
         for (char j = 0; j < SIZE_OF_BYTE_IN_BITS; ++j) {
             if (crc & MOST_SIGNIFICANT_BIT) {
                 crc = (crc << 1) ^ CRC_POLYNOMIAL;
@@ -96,7 +101,7 @@ void Message::makeCrcTable(){
                 crc <<= 1;
             }
         }
-        Message::crc_table[i] = crc;
+        crc_table[i] = crc;
     }
 }
 
@@ -132,11 +137,10 @@ void Message::setMessage(char* msg){
         }
         return;
     }
-
-    message = (msg_t*)strdup(msg);
+    message = (msg_t*)strndup(msg, MAX_MESSAGE_SIZE);
     if (isValidCrc() && isValidType()){
         cout << "is valid message" << endl; 
-        message -> m[message -> size + 3] = '\0';
+        // message -> m[message -> size + 3] = '\0';
     } else {
         message = NULL;
     }

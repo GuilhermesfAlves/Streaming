@@ -43,7 +43,7 @@ class Message{
 private:
     msg_t* message;
     unsigned int static frameCounter;
-    static char crc_table[POSSIBLE_VALUES_OF_A_BYTE];
+    static unsigned char crc_table[POSSIBLE_VALUES_OF_A_BYTE];
 public:
     Message();
     //construct message
@@ -55,12 +55,12 @@ public:
     char* getData();
     char getType();
     char getFrame();
+    char getMessageSize();
 private:
     bool isValidType();
     bool isValidType(const char type);
     bool isValidCrc();
-    char getMessageSize();
-    char buildCrc();
+    char buildCrc(int size);
     void makeCrcTable();
 };
 

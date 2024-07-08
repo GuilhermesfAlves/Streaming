@@ -11,10 +11,15 @@ MySocket::~MySocket(){
     free(lastSent);
 }
 
-void MySocket::post(char* buffer){
-    logger -> log(buffer, TX);
-    send(sockfd, buffer, strlen(buffer), 0);
-    strcpy(lastSent, buffer);
+void MySocket::post(const void* buffer, size_t len){
+    cout << "posting message len: " << len << endl;
+    cout << "buffer: " << (char*)buffer << endl;
+    int bytes = -1;
+    logger -> log((char*)buffer, TX);
+    while (bytes == -1)
+        bytes = send(sockfd, buffer, len, 0);
+    cout << "bytes sent: " << bytes << endl;
+    strcpy(lastSent, (char*)buffer);
 }
 
 char* MySocket::collect(char* buffer){
@@ -31,8 +36,7 @@ char* MySocket::collect(char* buffer){
     cout << "coletado len: "<< len << " buffer: " << buffer << endl;
     if (!strlen(buffer))
         return buffer;
-    cout << "before" <<  lastSent << endl;
-    cout << "after" << lastSent << endl;
+    cout << "last Sent" << lastSent << endl;
     logger -> log(buffer, RX);
     cout << "." << endl;
     return buffer;
@@ -57,11 +61,16 @@ void MySocket::setSocketPromisc(int ifindex){
     mr.mr_ifindex = ifindex;
     mr.mr_type = PACKET_MR_PROMISC;
     // Não joga fora o que identifica como lixo: Modo promíscuo
-    if (setsockopt(sockfd, SOL_PACKET, PACKET_ADD_MEMBERSHIP, &mr, sizeof(mr)) == -1) {
+    if (setsockopt(sockfd, SOL_PACKET, PACKET_ADD_MEMBERSHIP, &mr, sizeof(mr)) < 0) {
         cerr << "Erro ao definir PACKET_MR_PROMISC"
             "Verifique se a interface de rede foi especificada corretamente." << endl;
         close(sockfd);
         exit(EXIT_FAILURE);
+    }
+    int debug = 1;
+    if (setsockopt(sockfd, SOL_SOCKET, SO_DEBUG, &debug, sizeof(debug)) < 0) {
+        perror("Erro ao definir SO_DEBUG");
+        close(sockfd);
     }
 }
 

@@ -18,7 +18,7 @@ Logger::~Logger(){
     }
 }
 
-void Logger::log(char* message, const char* from){
+void Logger::log(const char* message, const char* from){
     // if (!strlen(message))
     //     return;
 

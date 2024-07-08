@@ -16,7 +16,7 @@ public:
     //set socket as PROMISC
     void setSocketPromisc(int ifindex);
     void setSocketTimeout(int timeoutMillis);
-    void post(char* buffer);
+    void post(const void* buffer, size_t len);
     char* collect(char* buffer);
 };
 
