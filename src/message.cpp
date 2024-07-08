@@ -5,7 +5,7 @@
 #define CRC_POLYNOMIAL 0b00000111 //7
 
 
-unsigned int Message::sequence;
+unsigned int Message::frameCounter;
 char Message::crc_table[POSSIBLE_VALUES_OF_A_BYTE];
 
 msg_t* Message::deserializeMessage(const char type, const char* data){
@@ -14,7 +14,7 @@ msg_t* Message::deserializeMessage(const char type, const char* data){
     if (!isValidType(type))
         return NULL;
     message -> head = HEAD_MARK;
-    message -> seq = sequence++;
+    message -> frame = frameCounter++;
     message -> type = type;
     if (data == NULL){
         message -> size = 0;
@@ -27,8 +27,8 @@ msg_t* Message::deserializeMessage(const char type, const char* data){
     return message;
 }
 
-int Message::serializeMessage(char* seq, char* type, char* data){
-    *seq = message -> seq;
+int Message::serializeMessage(char* frame, char* type, char* data){
+    *frame = message -> frame;
     *type = message -> type;
     strcpy(data, message -> data);
 
@@ -56,6 +56,7 @@ bool Message::isValidType(const char type){
     case T_END_TX:
     case T_ERROR:
         return true;
+    case T_INEXISTENT:
     default:
         return false;
     }
@@ -64,7 +65,7 @@ bool Message::isValidType(const char type){
 bool Message::isValidCrc(){
     char expectedCrc = 0x00;
     char currentCrc = buildCrc();
-    
+    cout << "is valid crc: " << (expectedCrc == currentCrc) << endl;
     return (expectedCrc == currentCrc);
 }
 
@@ -72,7 +73,7 @@ char Message::buildCrc(){
     char crc = 0;
 
     // i = 1, pois o crc não deve validar o HEAD
-    for (int i = 1; i < static_cast<int>(strlen(message -> m)); i++)
+    for (int i = 1; i < getMessageSize(); i++)
         crc = crc_table[crc ^ message -> m[i]];
 
     return crc;
@@ -81,7 +82,7 @@ char Message::buildCrc(){
 Message::Message(){
     message = NULL;
     makeCrcTable();
-    Message::sequence = 0;
+    Message::frameCounter = 0;
 }
 
 void Message::makeCrcTable(){
@@ -111,17 +112,22 @@ char Message::getType(){
     return message -> type;
 }
 
-char Message::getSeq(){
+char Message::getFrame(){
     if (!message)
         return INEXISTENT_FRAME;
-    return message -> seq;
+    return message -> frame;
+}
+
+char Message::getMessageSize(){
+    if (!message)
+        return 0;
+    return message -> size + 4;
 }
 
 void Message::setMessage(char* msg){
     if (!strlen(msg)){
         cout << "mensagem vazia" << endl;
         if (message){
-            free(message);
             message = NULL;
         }
         return;
@@ -132,7 +138,6 @@ void Message::setMessage(char* msg){
         cout << "is valid message" << endl; 
         message -> m[message -> size + 3] = '\0';
     } else {
-        free(message);
         message = NULL;
     }
 }

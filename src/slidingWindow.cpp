@@ -2,20 +2,26 @@
 #include <sys/time.h>
 
 SlidingWindow::SlidingWindow(string socketType) : socket(socketType){
-    lastCollected = T_INEXISTENT;
+    lastFrame = MAX_FRAME;
 } 
 
 int SlidingWindow::empty(){
     return (window.empty() && queue.empty());
 }
 
-int SlidingWindow::collectedEmpty(){
-    return collected.empty();
+int SlidingWindow::collectedSize(){
+    return collected.size();
+}
+
+void SlidingWindow:: showWindow(){
+    for (msg_t* m : window)
+        cout << "in window: " << m -> m << endl;
 }
 
 void SlidingWindow::update(){
     refillWindow();
     sendWindow();
+    showWindow();
     if (!window.empty()){
         getResponse();
     }
@@ -38,9 +44,7 @@ void SlidingWindow::sendWindow(){
 }
 
 void SlidingWindow::add(char type, const char* msg){
-    message.deserializeMessage(type, msg);
-    
-    queue.push_back((msg_t*)message.getMessage());
+    queue.push_back(message.deserializeMessage(type, msg));
 }
 
 void SlidingWindow::connect(int ifindex){
@@ -49,27 +53,27 @@ void SlidingWindow::connect(int ifindex){
 }
 
 int SlidingWindow::getWindow(){
-    unsigned char currentCollected;
+    unsigned char currentFrame;
     char buffer[BUFFER_SIZE];
-    long long start = timestamp();
+    long long start;
     start = timestamp();
 
     socket.setSocketTimeout(DEFAULT_TIMEOUT);
     do {
         message.setMessage(socket.collect(buffer));
-        currentCollected = message.getSeq();
-        if (currentCollected == INEXISTENT_FRAME)
+        currentFrame = message.getFrame();
+        if ((currentFrame == INEXISTENT_FRAME) || (currentFrame == lastFrame))
             continue;
-        cout << (int) currentCollected << " coletado" << endl;
-        if ((lastCollected != T_INEXISTENT) && (((lastCollected + 1) & MAX_FRAME) != currentCollected)){
-            respond(T_NACK, (lastCollected + 1) & MAX_FRAME);
+        cout << (int) currentFrame << " coletado" << endl;
+        if (((lastFrame + 1) & MAX_FRAME) != currentFrame){
+            respond(T_NACK, (lastFrame + 1) & MAX_FRAME);
             return 0;
         }
         
         collected.push_back((msg_t*)message.getMessage());
-        lastCollected = currentCollected;
+        lastFrame = currentFrame;
     } while (timestamp() - start <= (DEFAULT_TIMEOUT << 1));
-    respond(T_ACK, currentCollected);
+    respond(T_ACK, currentFrame);
 
     return 1;
 }
@@ -89,22 +93,23 @@ int SlidingWindow::getResponse(){
 
     socket.setSocketTimeout(DEFAULT_TIMEOUT);
     start = timestamp();
-    char seq = INEXISTENT_FRAME;
+    char frame = INEXISTENT_FRAME;
     do {
-        cout << "last seq: " << (int) seq << endl;
+        cout << "last frame: " << (int) frame << endl;
         cout << "listening" << endl;
         message.setMessage(isNotInWindow(socket.collect(buffer)));
+        showWindow();
         cout << "end1" << endl;
-    } while (((seq = myAtoi(message.getData())) == INEXISTENT_FRAME) && (timestamp() - start <= (DEFAULT_TIMEOUT << 1)));
+    } while (((frame = myAtoi(message.getData())) == INEXISTENT_FRAME) && (timestamp() - start <= (DEFAULT_TIMEOUT << 1)));
 
     cout << "time exploded: " << (bool) (start - timestamp() > (DEFAULT_TIMEOUT << 1)) << endl;
-    cout << "seq: " << (int) seq << endl;
-    if (seq == INEXISTENT_FRAME)
+    cout << "frame: " << (int) frame << endl;
+    if (frame == INEXISTENT_FRAME)
         return 0;
     cout << "not inexistent" << endl;
     cout << "received type: " << (int) message.getType() << endl;
-    cout << "window front seq: " << (int) window.front() -> seq << endl;
-    while ((!window.empty()) && (seq != window.front() -> seq)){
+    cout << "window front frame: " << (int) window.front() -> frame << endl;
+    while ((!window.empty()) && (frame != window.front() -> frame)){
         cout << "pop" << endl;
         window.pop_front();
     }
@@ -116,16 +121,17 @@ int SlidingWindow::getResponse(){
         return 1;
     }
     cout << "Not Ack" << endl;
+    showWindow();
     return 0;
 }
 
-void SlidingWindow::respond(char type, int seq){
+void SlidingWindow::respond(char type, int frame){
     char buffer[BUFFER_SIZE] = {0};
-    if (seq == INEXISTENT_FRAME)
+    if (frame == INEXISTENT_FRAME)
         return;
 
-    cout << "responding type: " << (int) type << " / seq: " << seq << endl;
-    sprintf(buffer, "%d", seq);
+    cout << "responding type: " << (int) type << " / frame: " << frame << endl;
+    sprintf(buffer, "%d", frame);
     socket.post((char*)message.deserializeMessage(type, buffer));    
 }
 
@@ -137,9 +143,10 @@ long long SlidingWindow::timestamp() {
 
 char* SlidingWindow::isNotInWindow(char* message){
     for (msg_t* msg : window){
+        cout << "comparing: " << message << " com: " << msg -> m << endl;
         if (!strcmp(msg -> m, message)){
             memset(message, 0, BUFFER_SIZE);
-            return message;
+            break;
         }
     }
     return message;

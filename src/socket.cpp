@@ -13,7 +13,7 @@ MySocket::~MySocket(){
 
 void MySocket::post(char* buffer){
     logger -> log(buffer, TX);
-    write(sockfd, buffer, strlen(buffer));
+    send(sockfd, buffer, strlen(buffer), 0);
     strcpy(lastSent, buffer);
 }
 
@@ -24,14 +24,15 @@ char* MySocket::collect(char* buffer){
     do {
         cout << "trying" << endl;
         memset(buffer, 0, BUFFER_SIZE);
-        len = read(sockfd, buffer, BUFFER_SIZE);
+        len = recv(sockfd, buffer, BUFFER_SIZE, 0);
         counter++;
         //  até 4 tentativas  //ouviu nada   // escutou a si mesmo          // mensagem sniffada
     } while ((counter < 4) && ((len < 0) || (!strcmp(lastSent, buffer)) || (buffer[0] != HEAD_MARK)));
     cout << "coletado len: "<< len << " buffer: " << buffer << endl;
     if (!strlen(buffer))
         return buffer;
-    strcpy(lastSent, buffer);
+    cout << "before" <<  lastSent << endl;
+    cout << "after" << lastSent << endl;
     logger -> log(buffer, RX);
     cout << "." << endl;
     return buffer;
@@ -82,5 +83,6 @@ int MySocket::createSocket(){
         logger -> output("Build socket error");
         exit(EXIT_FAILURE);
     }
+    cout << "sock nº: "<< sockfd << endl;   
     return sockfd;
 }

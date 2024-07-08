@@ -30,7 +30,7 @@ typedef union{
     struct {
         char head;
         unsigned char size : 6;
-        unsigned char seq : 5;
+        unsigned char frame : 5;
         unsigned char type : 5;
         char data[MAX_DATA_SIZE];
         char crc; 
@@ -42,23 +42,24 @@ typedef union{
 class Message{
 private:
     msg_t* message;
-    unsigned int static sequence;
+    unsigned int static frameCounter;
     static char crc_table[POSSIBLE_VALUES_OF_A_BYTE];
 public:
     Message();
     //construct message
     msg_t* deserializeMessage(const char type, const char* data);
     //desconstruct message
-    int serializeMessage(char* seq, char* type, char* data);
+    int serializeMessage(char* frame, char* type, char* data);
     char* getMessage();
     void setMessage(char* msg);
     char* getData();
     char getType();
-    char getSeq();
+    char getFrame();
 private:
     bool isValidType();
     bool isValidType(const char type);
     bool isValidCrc();
+    char getMessageSize();
     char buildCrc();
     void makeCrcTable();
 };

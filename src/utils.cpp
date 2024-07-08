@@ -8,7 +8,7 @@ Logger::Logger(string fileName){
         exit(EXIT_FAILURE);
     }
 
-    logFile << "From \t| Size \t| Sequence \t| Type \t| Data \t| Status" << endl;
+    logFile << "From \t| Size \t| Frame \t| Type \t| Data \t| Status" << endl;
     logFile << "----------------------------------------------------" << endl;
 }
 
@@ -28,7 +28,7 @@ void Logger::log(char* message, const char* from){
 
     logFile << "\t" << from \
      << "\t| " << setw(2) << setfill('0') << (int)(m -> size)\
-      << "\t| " << setw(2) << setfill('0') << (int)(m -> seq)\
+      << "\t| " << setw(2) << setfill('0') << (int)(m -> frame)\
        << "\t| " << setw(2) << setfill('0') << (int)(m -> type)\
         << "\t| " << data\
          << "\t| " << strerror(errno) << endl;

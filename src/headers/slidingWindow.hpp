@@ -15,16 +15,17 @@ private:
     list<msg_t*> collected;
     Message message;
     MySocket socket;
-    char lastCollected;
+    char lastFrame;
     void sendWindow();
     void refillWindow();
     long long timestamp();
     char* isNotInWindow(char* message);
+    void showWindow();
 public: 
     SlidingWindow(string socketType);
     void connect(int ifindex);
     int empty();
-    int collectedEmpty();
+    int collectedSize();
     void update();
     void add(char type, const char* msg);
     int getWindow();

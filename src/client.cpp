@@ -10,8 +10,9 @@ int Client::run(){
     // m.setMessage(socket -> collect(buffer));
     // cout << "Mensagem recebida: " << m.getData() << endl;
     
-    window.add(T_PRINT, "Hello from client! :)");
-    window.add(T_PRINT, "Another message :)");
+    window.add(T_PRINT, "1 Hello from client! :)");
+    window.add(T_PRINT, "2 Another message! :)");
+    window.add(T_PRINT, "3 Last message! :)");
     while (!window.empty()){
         cout << "update" << endl;
         window.update();
