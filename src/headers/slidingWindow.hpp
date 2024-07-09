@@ -20,6 +20,7 @@ private:
     void refillWindow();
     long long timestamp();
     char* isNotInWindow(char* message);
+    char* alreadyCollected(char* buffer);
     void showWindow();
 public: 
     SlidingWindow(string socketType);

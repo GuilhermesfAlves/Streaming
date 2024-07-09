@@ -24,7 +24,7 @@ msg_t* Message::deserializeMessage(const char type, const char* data){
     message -> size = strlen(data);
     strncpy(message -> data, data, message -> size);
     message -> data[message -> size] = buildCrc(message -> size + 3);
-    cout << (int) (unsigned char)message -> data[message -> size + 1] << endl;
+    cout << (int) (unsigned char)message -> data[message -> size] << endl;
     
     return message;
 }
@@ -78,6 +78,7 @@ char Message::buildCrc(int size){
     // i = 1, pois o crc não deve validar o HEAD
     cout << "tam:" << size << endl;
     for (int i = 1; i < size; i++){
+        cout << "crc: " << (int)(unsigned char)crc << " char: " << (int)(unsigned char)message -> m[i] << " table: " << (int)(unsigned char)crc_table[(unsigned char)crc ^ (unsigned char)message -> m[i]] << endl;
         crc = crc_table[(unsigned char)crc ^ (unsigned char)message -> m[i]];
     }
 
@@ -107,8 +108,12 @@ void Message::makeCrcTable(){
 
 char* Message::getData(){
     if (!message)
-        return strdup("32");
-    return message -> data;
+        return const_cast<char*>("32");
+    // say first 14 bytes
+    for (int i = 0; i < 14; i++)
+        cout << message -> m[i];
+    cout << endl;
+    return &(message -> m[3]);
 }
 
 char Message::getType(){
@@ -129,18 +134,37 @@ char Message::getMessageSize(){
     return message -> size + 4;
 }
 
+char* myStrdup(char* msg){
+    int size = 0;
+
+    //myStrlen
+    for (int i = 0; i < MAX_MESSAGE_SIZE; i++)
+        if (msg[i]!= '\0')
+            size = i;
+    
+    cout << "My strdup" << endl;
+    size++;
+    char* new_msg = (char*) calloc(0, (size_t)size);
+    //myStrcpy
+    for (int i = 0; i < size; i++)
+        new_msg[i] = msg[i];    
+    
+    
+    return new_msg;
+}
+
 void Message::setMessage(char* msg){
-    if (!strlen(msg)){
+    if ((!strlen(msg))|| (msg[0] != HEAD_MARK)){
         cout << "mensagem vazia" << endl;
         if (message){
             message = NULL;
         }
         return;
     }
-    message = (msg_t*)strndup(msg, MAX_MESSAGE_SIZE);
+    message = (msg_t*)myStrdup(msg);
     if (isValidCrc() && isValidType()){
         cout << "is valid message" << endl; 
-        // message -> m[message -> size + 3] = '\0';
+        message -> m[message -> size + 3] = '\0';
     } else {
         message = NULL;
     }

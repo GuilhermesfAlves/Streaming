@@ -12,33 +12,33 @@ MySocket::~MySocket(){
 }
 
 void MySocket::post(const void* buffer, size_t len){
-    cout << "posting message len: " << len << endl;
-    cout << "buffer: " << (char*)buffer << endl;
+    // cout << "posting message len: " << len << endl;
+    // cout << "buffer: " << (char*)buffer << endl;
+    if (len < 14)   
+        len = 14;
     int bytes = -1;
     logger -> log((char*)buffer, TX);
     while (bytes == -1)
-        bytes = send(sockfd, buffer, len, 0);
-    cout << "bytes sent: " << bytes << endl;
+        bytes = write(sockfd, buffer, len);
+    // cout << "bytes sent: " << bytes << endl;
     strcpy(lastSent, (char*)buffer);
 }
 
 char* MySocket::collect(char* buffer){
-    int counter = 0;
     int len;
-    cout << "," << endl;
-    do {
-        cout << "trying" << endl;
+
+    cout << "trying" << endl;
+    memset(buffer, 0, BUFFER_SIZE);
+    len = read(sockfd, buffer, BUFFER_SIZE);
+    //ouviu nada       // escutou a si mesmo
+    if ((len <= 0) || (!strcmp(lastSent, buffer))){
         memset(buffer, 0, BUFFER_SIZE);
-        len = recv(sockfd, buffer, BUFFER_SIZE, 0);
-        counter++;
-        //  até 4 tentativas  //ouviu nada   // escutou a si mesmo          // mensagem sniffada
-    } while ((counter < 4) && ((len < 0) || (!strcmp(lastSent, buffer)) || (buffer[0] != HEAD_MARK)));
-    cout << "coletado len: "<< len << " buffer: " << buffer << endl;
-    if (!strlen(buffer))
         return buffer;
+    }
+
+    cout << "coletado len: " << len << " buffer: " << buffer << endl;
     cout << "last Sent" << lastSent << endl;
     logger -> log(buffer, RX);
-    cout << "." << endl;
     return buffer;
 }
 
@@ -80,6 +80,12 @@ void MySocket::setSocketTimeout(int timeoutMillis){
     timeout.tv_sec = timeoutMillis / 1000;
     timeout.tv_usec = (timeoutMillis % 1000) * 1000;
     if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (char*) &timeout, sizeof(timeout)) == -1) {
+        cerr << "Erro ao definir Timeout: "
+            "Verifique se timeoutMillis foi especificada corretamente." << endl;
+        close(sockfd);
+        exit(EXIT_FAILURE);
+    }
+    if (setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, (char*) &timeout, sizeof(timeout)) == -1) {
         cerr << "Erro ao definir Timeout: "
             "Verifique se timeoutMillis foi especificada corretamente." << endl;
         close(sockfd);

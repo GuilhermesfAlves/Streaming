@@ -12,11 +12,11 @@ Streaming* streamingFactory(char* mode){
 }
 
 bool isValidConnection(char* connection){
-    return (!(strcmp("lo", connection)) || !(strcmp("enp3s0", connection)));
+    return (!(strcmp("lo", connection)) || !(strcmp("enp0s31f6", connection)));
 }
 
 int main(int argc, char* argv[]) {
-    string executeTemplate = "Use: ./exec [<client> | <server>] [<lo> <enp3s0>]"; 
+    string executeTemplate = "Use: ./exec [<client> | <server>] [<lo> <enp0s31f6>]"; 
     
     // Verifica se há exatamente 3 argumentos
     if ((argc != 3) || (!isValidConnection(argv[2]))) {
