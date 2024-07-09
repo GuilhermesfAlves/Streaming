@@ -1,39 +1,40 @@
 #include "headers/utils.hpp"
-#include <iomanip>
 
-Logger::Logger(string fileName){
-    logFile.open(fileName.append("_logger.log"));
-    if (!logFile.is_open()){
-        output("Error creating logger");
-        exit(EXIT_FAILURE);
+int myAtoi(char* str){
+
+    for (int i = 0; str[i] != '\0'; i++){
+        if ((str[i] < '0') || (str[i] > '9'))
+            return INEXISTENT_FRAME;
     }
-
-    logFile << "From \t| Size \t| Frame \t| Type \t| Data \t| Status" << endl;
-    logFile << "----------------------------------------------------" << endl;
+    return atoi(str);
 }
 
-Logger::~Logger(){
-    if (logFile.is_open()){
-        logFile.close();
-    }
+int myStrlen(msg_t* msg){
+    return msg -> size;
 }
 
-void Logger::log(const char* message, const char* from){
-    // if (!strlen(message))
-    //     return;
-
-    msg_t* m = (msg_t*)(message);
-    char data[MAX_DATA_SIZE] = {0};
-    strncpy(data, m -> data, m -> size);
-
-    logFile << "\t" << from \
-     << "\t| " << setw(2) << setfill('0') << (int)(m -> size)\
-      << "\t| " << setw(2) << setfill('0') << (int)(m -> frame)\
-       << "\t| " << setw(2) << setfill('0') << (int)(m -> type)\
-        << "\t| " << data\
-         << "\t| " << strerror(errno) << endl;
+void myStrcpy(char* dest, char* src, int size){
+    for (int i = 0; i < size; i++)
+        new_msg[i] = msg[i];    
 }
 
-void Logger::output(const char* message){
-    cout << message << endl;
+char* myStrdup(char* msg){
+    int size = 0;
+
+    //myStrlen
+    for (int i = 0; i < MAX_MESSAGE_SIZE; i++)
+        if (msg[i]!= '\0')
+            size = i;
+    
+    cout << "My strdup" << endl;
+    size++;
+    char* new_msg = (char*) calloc(0, (size_t)size);
+    //myStrcpy
+    for (int i = 0; i < size; i++)
+        new_msg[i] = msg[i];    
+    
+    
+    return new_msg;
 }
+
+

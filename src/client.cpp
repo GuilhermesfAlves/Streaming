@@ -2,14 +2,7 @@
 
 
 int Client::run(){
-    // char buffer[BUFFER_SIZE] = {0};
-    // Message m;
 
-    // socket -> post((char*)m.deserializeMessage(T_PRINT, "Hello from client!"));
-
-    // m.setMessage(socket -> collect(buffer));
-    // cout << "Mensagem recebida: " << m.getData() << endl;
-    
     window.add(T_PRINT, "1 Hello from client! :)");
     window.add(T_PRINT, "2 Second message! :)");
     window.add(T_PRINT, "3 Third message! :)");

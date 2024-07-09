@@ -21,7 +21,7 @@ void SlidingWindow:: showWindow(){
 void SlidingWindow::update(){
     refillWindow();
     sendWindow();
-    showWindow();
+    // showWindow();
     if (!window.empty()){
         getResponse();
     }
@@ -93,15 +93,6 @@ int SlidingWindow::getWindow(){
     respond(T_ACK, lastFrame);
 
     return 1;
-}
-
-int myAtoi(char* str){
-
-    for (int i = 0; str[i] != '\0'; i++){
-        if ((str[i] < '0') || (str[i] > '9'))
-            return INEXISTENT_FRAME;
-    }
-    return atoi(str);
 }
 
 int SlidingWindow::getResponse(){

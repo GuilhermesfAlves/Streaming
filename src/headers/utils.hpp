@@ -25,14 +25,8 @@ using namespace std;
 #define SERVER_MODE 1
 #define BUFFER_SIZE MAX_MESSAGE_SIZE
 
-class Logger{
-private:
-    ofstream logFile;
-public:
-    Logger(string fileName);
-    ~Logger();
-    void log(const char* message, const char* from);
-    void output(const char* message);
-};
+
+char* myStrdup(char* msg);
+int myAtoi(char* str);
 
 #endif

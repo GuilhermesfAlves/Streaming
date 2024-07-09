@@ -66,7 +66,7 @@ bool Message::isValidType(const char type){
 
 bool Message::isValidCrc(){
     char expectedCrc = 0x00;
-    unsigned char currentCrc = buildCrc(message -> size + 4);
+    unsigned char currentCrc = buildCrc(message -> size + MIN_MESSAGE_SIZE);
     cout << "current crc: " << (int) currentCrc << endl;
     cout << "is valid crc: " << (expectedCrc == currentCrc) << endl;
     return (expectedCrc == currentCrc);
@@ -113,7 +113,7 @@ char* Message::getData(){
     for (int i = 0; i < 14; i++)
         cout << message -> m[i];
     cout << endl;
-    return &(message -> m[3]);
+    return &(message -> m[DATA_INDEX]);
 }
 
 char Message::getType(){
@@ -132,25 +132,6 @@ char Message::getMessageSize(){
     if (!message)
         return 0;
     return message -> size + 4;
-}
-
-char* myStrdup(char* msg){
-    int size = 0;
-
-    //myStrlen
-    for (int i = 0; i < MAX_MESSAGE_SIZE; i++)
-        if (msg[i]!= '\0')
-            size = i;
-    
-    cout << "My strdup" << endl;
-    size++;
-    char* new_msg = (char*) calloc(0, (size_t)size);
-    //myStrcpy
-    for (int i = 0; i < size; i++)
-        new_msg[i] = msg[i];    
-    
-    
-    return new_msg;
 }
 
 void Message::setMessage(char* msg){

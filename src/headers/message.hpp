@@ -7,12 +7,14 @@
 
 #define MAX_MESSAGE_SIZE 67
 #define MIN_MESSAGE_SIZE 4
-#define MIN_DATA_SIZE 0
 #define MAX_DATA_SIZE 63
+#define MIN_DATA_SIZE 0
 
 #define INEXISTENT_FRAME 32
 #define MAX_FRAME 31
 #define MIN_FRAME 0
+
+#define DATA_INDEX 3
 
 #define HEAD_MARK 0b01111110 //126
 
