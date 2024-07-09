@@ -29,7 +29,7 @@ void SlidingWindow::update(){
 }
 
 void SlidingWindow::refillWindow(){
-    while ((window.size() <= WINDOW_SIZE) && (!queue.empty())){
+    while ((window.size() < WINDOW_SIZE) && (!queue.empty())){
         cout << "refilling window" << endl;
         window.push_back(queue.front());
         queue.pop_front();
@@ -130,18 +130,23 @@ int SlidingWindow::getResponse(){
 //    cout << (bool)((unsigned char)frame != (unsigned char)(window.front() -> frame)) << endl;
 //    cout << (int)(unsigned char)frame << endl;
 //    cout << (int)(unsigned char)window.front() -> frame << endl;
-    while ((!window.empty()) && (bool)((unsigned char)frame != (unsigned char)(window.front() -> frame))){
+    lastFrame = message.getFrame();
+    while ((!window.empty()) && (bool)((unsigned char)frame != (unsigned char)(window.front() -> frame)) && (window.size() > 1)){
         cout << "pop" << endl;
         window.pop_front();
     }
     cout << "front popped" << endl;
     char type;
-    if ((type = message.getType()) == T_ACK){
+    if (((type = message.getType()) == T_ACK) && (bool)((unsigned char)frame == (unsigned char)(window.front() -> frame))){
         cout << "ACK confirmed" << endl;
         window.pop_front();
         return 1;
     }
     cout << "Not Ack" << endl;
+    if (type == T_NACK){
+        cout << "NACK confirmed" << endl;
+    }
+
     showWindow();
     return 0;
 }

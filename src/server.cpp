@@ -9,16 +9,16 @@ int Server::run(){
 
     // socket -> post((char*)m.deserializeMessage(T_PRINT, "Hello from server!"));
 
-    while (window.collectedSize() != 3){
+    while (window.collectedSize() != 6){
         window.getWindow();
         cout << "collect end "  << window.collectedSize() << endl;
     }
     cout << "fim collect, comeco envio" << endl;
-    // window.add(T_PRINT, "Hello from server! :)");
-    // while (!window.empty()){
-    //     cout << "update" << endl;
-    //     window.update();
-    // }
+    window.add(T_PRINT, "Hello from server! :)");
+    while (!window.empty()){
+        cout << "update" << endl;
+        window.update();
+    }
 
     return 0;
 }
