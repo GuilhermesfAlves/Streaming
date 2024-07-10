@@ -1,5 +1,5 @@
-#include "headers/client.hpp"
-#include "headers/server.hpp"
+#include "include/client.hpp"
+#include "include/server.hpp"
 
 using namespace std;
 
@@ -11,15 +11,11 @@ Streaming* streamingFactory(char* mode){
     return NULL;
 }
 
-bool isValidConnection(char* connection){
-    return (!(strcmp("lo", connection)) || !(strcmp("enp0s31f6", connection)));
-}
-
 int main(int argc, char* argv[]) {
-    string executeTemplate = "Use: ./exec [<client> | <server>] [<lo> <enp0s31f6>]"; 
+    string executeTemplate = "Use: ./exec [<client> | <server>] [your web interface: try running ifconfig to see which are avaiable]"; 
     
     // Verifica se há exatamente 3 argumentos
-    if ((argc != 3) || (!isValidConnection(argv[2]))) {
+    if (argc != 3) {
         cerr << executeTemplate << endl;
         exit(EXIT_FAILURE);
     }

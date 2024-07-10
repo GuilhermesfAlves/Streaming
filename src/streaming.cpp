@@ -1,4 +1,4 @@
-#include "headers/streaming.hpp"
+#include "include/streaming.hpp"
 
 Streaming::Streaming(string log_name): window(SlidingWindow(log_name)){}
 

@@ -10,18 +10,25 @@ Você necessita ter acesso ao Root do sistema.
 ``` bash
 make
 ```
-`lo` para loopback, ou seja rodando numa mesma máquina
-`enp3s0` para se conectar com outra maquina por cabo
 
+### Web interface:
+rode `ifconfig` para saber quais interfaces de rede estão disponíveis na sua máquina
+``` bash
+ifconfig
+```
+Possíveis interfaces de rede: `lo`, `enp3s0`, `enp0s31f6` 
+
+#### Loopback
+Use `lo` se você não estiver conectando duas máquinas através de um cabo.
 
 Primeiro você deve inicializar em um terminal o servidor.
 ```bash
-sudo ./exec server <lo> | <enp3s0>
+sudo ./exec server [Web interface]
 ```
 
 Depois você deverá inicializar o client.
 ```bash
-sudo ./exec client <lo> | <enp3s0>
+sudo ./exec client [Web interface]
 ```
 
 Assim você estabelecerá a conexão entre eles.
