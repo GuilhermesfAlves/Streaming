@@ -63,6 +63,7 @@ public:
     char getType();
     char getFrame();
     char getMessageSize();
+    int dataAtoi();
 private:
     bool isValidType();
     bool isValidType(const char type);
@@ -71,7 +72,6 @@ private:
     void makeCrcTable();
 };
 
-int dataAtoi(char* str);
 int msglen(msg_t* msg);
 msg_t* msgdup(msg_t* msg);
 msg_t* msgcpy(msg_t* dest, msg_t* src);

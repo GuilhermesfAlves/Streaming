@@ -81,8 +81,8 @@ bool Message::isValidCrc(){
 char Message::buildCrc(int size){
     unsigned char crc = 0;
 
-    // i = 1, pois o crc não deve validar o HEAD
     cout << "tam:" << size << endl;
+    // i = 1, pois o crc não deve validar o HEAD
     for (int i = 1; i < size; i++){
         cout << "crc: " << (int)(unsigned char)crc << " " << message -> m[i] <<" char: " << (int)(unsigned char)message -> m[i] << " table: " << (int)(unsigned char)crc_table[(unsigned char)crc ^ (unsigned char)message -> m[i]] << endl;
         crc = crc_table[(unsigned char)crc ^ (unsigned char)message -> m[i]];
@@ -132,7 +132,7 @@ char Message::getFrame(){
 char Message::getMessageSize(){
     if (!message)
         return 0;
-    return message -> size + OVERHEAD;
+    return msglen(message);
 }
 
 void Message::setMessage(char* msg){
@@ -146,19 +146,23 @@ void Message::setMessage(char* msg){
     message = msgdup((msg_t*)msg);
     if (isValidCrc() && isValidType()){
         cout << "is valid message" << endl; 
+        //remove o crc da mensagem
         message -> m[message -> size + 3] = '\0';
     } else {
         message = NULL;
     }
 }
 
-int dataAtoi(char* str){
+int Message::dataAtoi(){
 
-    for (int i = 0; str[i] != '\0'; i++){
-        if ((str[i] < '0') || (str[i] > '9'))
+    if (!message)
+        return INEXISTENT_FRAME;
+
+    for (int i = 0; message -> data[i] != '\0'; i++)
+        if ((message -> data[i] < '0') || (message -> data[i] > '9'))
             return INEXISTENT_FRAME;
-    }
-    return atoi(str);
+    
+    return atoi(message -> data);
 }
 
 int msglen(msg_t* msg){
@@ -169,17 +173,15 @@ msg_t* msgdup(msg_t* msg){
     int size = msglen(msg);
 
     msg_t* new_msg = (msg_t*) calloc((size_t)size + 1, 1);
-    msgcpy(new_msg, msg);   
     
-    return new_msg;
+    return msgcpy(new_msg, msg);
 }
 
 msg_t* msgcpy(msg_t* dest, msg_t* src){
     int size = msglen(src);
     
-    for (int i = 0; i < size; i++){
+    for (int i = 0; i < size; i++)
         dest -> m[i] = src -> m[i];
-        cout << (int)(unsigned char)dest -> m[i]  << " | " << (int)(unsigned char)src -> m[i]<< endl;
-    }
+
     return dest;
 }

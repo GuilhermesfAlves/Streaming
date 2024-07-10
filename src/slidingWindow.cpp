@@ -85,7 +85,7 @@ int SlidingWindow::getWindow(){
         
         collected.push_back((msg_t*)message.getMessage());
         lastFrame = currentFrame;
-    } while (timestamp() - start <= (DEFAULT_TIMEOUT << 3));
+    } while (timestamp() - start <= (DEFAULT_TIMEOUT << 2));
 
     if (lastFrame == before)
         return 0;
@@ -102,31 +102,31 @@ int SlidingWindow::getResponse(){
     start = timestamp();
     char frame = INEXISTENT_FRAME;
     do {
-       cout << "last frame: " << (int) frame << endl;
-       cout << "listening" << endl;
+    //    cout << "last frame: " << (int) frame << endl;
+    //    cout << "listening" << endl;
         message.setMessage(isNotInWindow(socket.collect(buffer)));
         showWindow();
-       cout << "end1" << endl;
-    } while (((frame = dataAtoi(message.getData())) == INEXISTENT_FRAME) && (timestamp() - start <= (DEFAULT_TIMEOUT << 5)));
+    //    cout << "end1" << endl;
+    } while (((frame = message.dataAtoi()) == INEXISTENT_FRAME) && (timestamp() - start <= (DEFAULT_TIMEOUT << 2)));
 
-   cout << "time exploded: " << (bool) (start - timestamp() > (DEFAULT_TIMEOUT << 1)) << endl;
-   cout << "frame: " << (int) frame << endl;
+//    cout << "time exploded: " << (bool) (start - timestamp() > (DEFAULT_TIMEOUT << 1)) << endl;
+//    cout << "frame: " << (int) frame << endl;
     if (frame == INEXISTENT_FRAME)
         return 0;
-   cout << "not inexistent" << endl;
-   cout << "received type: " << (int) message.getType() << endl;
-   cout << "window front frame: " << (int) window.front() -> frame << endl;
-   cout << "Get data: " << message.getData() << endl;
-   cout << !window.empty() << endl;
-   cout << (bool)((unsigned char)frame != (unsigned char)(window.front() -> frame)) << endl;
-   cout << (int)(unsigned char)frame << endl;
-   cout << (int)(unsigned char)window.front() -> frame << endl;
+//    cout << "not inexistent" << endl;
+//    cout << "received type: " << (int) message.getType() << endl;
+//    cout << "window front frame: " << (int) window.front() -> frame << endl;
+//    cout << "Get data: " << message.getData() << endl;
+//    cout << !window.empty() << endl;
+//    cout << (bool)((unsigned char)frame != (unsigned char)(window.front() -> frame)) << endl;
+//    cout << (int)(unsigned char)frame << endl;
+//    cout << (int)(unsigned char)window.front() -> frame << endl;
     lastFrame = message.getFrame();
     while ((!window.empty()) && (bool)((unsigned char)frame != (unsigned char)(window.front() -> frame)) && (window.size() > 1)){
-        cout << "pop" << endl;
+        // cout << "pop" << endl;
         window.pop_front();
     }
-    cout << "front popped" << endl;
+    // cout << "front popped" << endl;
     char type;
     if (((type = message.getType()) == T_ACK) && (bool)((unsigned char)frame == (unsigned char)(window.front() -> frame))){
         cout << "ACK confirmed" << endl;
