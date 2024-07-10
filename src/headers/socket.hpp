@@ -1,6 +1,7 @@
 #ifndef __MY_SOCKET__
 #define __MY_SOCKET__
 #include "utils.hpp"
+#include "logger.hpp"
 
 class MySocket{
 private:

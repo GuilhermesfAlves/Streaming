@@ -35,6 +35,10 @@ char* MySocket::collect(char* buffer){
         memset(buffer, 0, BUFFER_SIZE);
         return buffer;
     }
+    cout << "collected: "<< endl;
+    for (int i = 0; buffer[i] != '\0'; i++){
+        cout << (int)(unsigned char) buffer[i] << " "<< buffer[i] << endl;
+    }
 
     cout << "coletado len: " << len << " buffer: " << buffer << endl;
     cout << "last Sent" << lastSent << endl;

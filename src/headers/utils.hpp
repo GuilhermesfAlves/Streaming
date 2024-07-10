@@ -25,8 +25,4 @@ using namespace std;
 #define SERVER_MODE 1
 #define BUFFER_SIZE MAX_MESSAGE_SIZE
 
-
-char* myStrdup(char* msg);
-int myAtoi(char* str);
-
 #endif

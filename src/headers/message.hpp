@@ -5,10 +5,13 @@
 
 #define POSSIBLE_VALUES_OF_A_BYTE 256
 
+
 #define MAX_MESSAGE_SIZE 67
 #define MIN_MESSAGE_SIZE 4
 #define MAX_DATA_SIZE 63
 #define MIN_DATA_SIZE 0
+
+#define OVERHEAD MIN_MESSAGE_SIZE
 
 #define INEXISTENT_FRAME 32
 #define MAX_FRAME 31
@@ -67,5 +70,10 @@ private:
     char buildCrc(int size);
     void makeCrcTable();
 };
+
+int dataAtoi(char* str);
+int msglen(msg_t* msg);
+msg_t* msgdup(msg_t* msg);
+msg_t* msgcpy(msg_t* dest, msg_t* src);
 
 #endif 

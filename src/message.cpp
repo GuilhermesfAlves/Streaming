@@ -8,6 +8,12 @@
 unsigned int Message::frameCounter;
 unsigned char Message::crc_table[POSSIBLE_VALUES_OF_A_BYTE];
 
+Message::Message(){
+    message = NULL;
+    makeCrcTable();
+    frameCounter = 0;
+}
+
 msg_t* Message::deserializeMessage(const char type, const char* data){
     message = static_cast<msg_t*>(calloc(MAX_MESSAGE_SIZE, 1));
 
@@ -23,8 +29,8 @@ msg_t* Message::deserializeMessage(const char type, const char* data){
     }
     message -> size = strlen(data);
     strncpy(message -> data, data, message -> size);
-    message -> data[message -> size] = buildCrc(message -> size + 3);
-    cout << (int) (unsigned char)message -> data[message -> size] << endl;
+    message -> data[message -> size] = buildCrc(msglen(message) - 1);
+    cout << (int)(unsigned char)message -> data[message -> size] << endl;
     
     return message;
 }
@@ -66,7 +72,7 @@ bool Message::isValidType(const char type){
 
 bool Message::isValidCrc(){
     char expectedCrc = 0x00;
-    unsigned char currentCrc = buildCrc(message -> size + MIN_MESSAGE_SIZE);
+    unsigned char currentCrc = buildCrc(msglen(message));
     cout << "current crc: " << (int) currentCrc << endl;
     cout << "is valid crc: " << (expectedCrc == currentCrc) << endl;
     return (expectedCrc == currentCrc);
@@ -78,18 +84,13 @@ char Message::buildCrc(int size){
     // i = 1, pois o crc não deve validar o HEAD
     cout << "tam:" << size << endl;
     for (int i = 1; i < size; i++){
-        cout << "crc: " << (int)(unsigned char)crc << " char: " << (int)(unsigned char)message -> m[i] << " table: " << (int)(unsigned char)crc_table[(unsigned char)crc ^ (unsigned char)message -> m[i]] << endl;
+        cout << "crc: " << (int)(unsigned char)crc << " " << message -> m[i] <<" char: " << (int)(unsigned char)message -> m[i] << " table: " << (int)(unsigned char)crc_table[(unsigned char)crc ^ (unsigned char)message -> m[i]] << endl;
         crc = crc_table[(unsigned char)crc ^ (unsigned char)message -> m[i]];
     }
 
     return crc;
 }
 
-Message::Message(){
-    message = NULL;
-    makeCrcTable();
-    frameCounter = 0;
-}
 
 void Message::makeCrcTable(){
 
@@ -113,7 +114,7 @@ char* Message::getData(){
     for (int i = 0; i < 14; i++)
         cout << message -> m[i];
     cout << endl;
-    return &(message -> m[DATA_INDEX]);
+    return message -> data;
 }
 
 char Message::getType(){
@@ -131,7 +132,7 @@ char Message::getFrame(){
 char Message::getMessageSize(){
     if (!message)
         return 0;
-    return message -> size + 4;
+    return message -> size + OVERHEAD;
 }
 
 void Message::setMessage(char* msg){
@@ -142,11 +143,43 @@ void Message::setMessage(char* msg){
         }
         return;
     }
-    message = (msg_t*)myStrdup(msg);
+    message = msgdup((msg_t*)msg);
     if (isValidCrc() && isValidType()){
         cout << "is valid message" << endl; 
         message -> m[message -> size + 3] = '\0';
     } else {
         message = NULL;
     }
+}
+
+int dataAtoi(char* str){
+
+    for (int i = 0; str[i] != '\0'; i++){
+        if ((str[i] < '0') || (str[i] > '9'))
+            return INEXISTENT_FRAME;
+    }
+    return atoi(str);
+}
+
+int msglen(msg_t* msg){
+    return msg -> size + OVERHEAD;
+}
+
+msg_t* msgdup(msg_t* msg){
+    int size = msglen(msg);
+
+    msg_t* new_msg = (msg_t*) calloc((size_t)size + 1, 1);
+    msgcpy(new_msg, msg);   
+    
+    return new_msg;
+}
+
+msg_t* msgcpy(msg_t* dest, msg_t* src){
+    int size = msglen(src);
+    
+    for (int i = 0; i < size; i++){
+        dest -> m[i] = src -> m[i];
+        cout << (int)(unsigned char)dest -> m[i]  << " | " << (int)(unsigned char)src -> m[i]<< endl;
+    }
+    return dest;
 }

@@ -2,3 +2,4 @@
 exec
 *_logger.log
 /obj
+*.pcap
