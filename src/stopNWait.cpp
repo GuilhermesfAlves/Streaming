@@ -3,7 +3,6 @@
 StopNWait::StopNWait(string socketType) : FluxControl(socketType){
 }
 
-//não pode subir
 int StopNWait::receive(){
     int status;
 
@@ -19,7 +18,6 @@ int StopNWait::receive(){
     }
 }
 
-//não pode subir
 int StopNWait::listen(){
     char buffer[BUFFER_SIZE] = {0};
     long long start;
@@ -33,7 +31,6 @@ int StopNWait::listen(){
     return status;
 }
 
-//não pode subir
 int StopNWait::send(unsigned char type, char* msg){
     msg_t* toSend = message -> deserializeMessage(type, msg);
     do {
@@ -41,4 +38,19 @@ int StopNWait::send(unsigned char type, char* msg){
     } while(!listen());
 
     return confirmAck(message -> getFrame());    
+}
+
+int StopNWait::send(unsigned char type, int msg){
+    char buffer[BUFFER_SIZE] = {0};
+    sprintf(buffer, "%d", msg);
+    return send(type, buffer);
+}
+
+int StopNWait::send(unsigned char type, int msg){
+    return send(type, (char*)NULL);
+}
+
+
+int StopNWait::getDataNumber(){
+    return message -> dataAtoi();
 }

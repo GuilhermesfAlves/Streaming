@@ -24,6 +24,8 @@ public:
     void add(char type, const char* msg);
     int getWindow();
     int getResponse();
+    void flushCollected();
+    void printCollected();
 };
 
 #endif

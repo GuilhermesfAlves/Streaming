@@ -5,6 +5,9 @@
 #include "stopNWait.hpp"
 
 class Streaming{
+protected:
+    int action;
+    int fileCount;
 public:
     StopNWait single;
     SlidingWindow window;

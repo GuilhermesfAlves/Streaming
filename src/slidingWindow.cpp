@@ -144,3 +144,13 @@ char* SlidingWindow::isNotInWindow(char* message){
     }
     return message;
 }
+
+void SlidingWindow::flushCollected(){
+    collected.clear();
+}
+
+void SlidingWindow::printCollected(){
+    int i = 1;
+    for (msg_t* m : collected)
+        cout << "(" << i++ << ")" << m -> data << endl;
+}

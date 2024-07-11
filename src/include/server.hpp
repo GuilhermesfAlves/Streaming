@@ -4,6 +4,10 @@
     #include "streaming.hpp"
 
     class Server: public Streaming{
+    private:
+        const string path = "/cathalogS";
+        void getFilesInCathalog();
+        void getFilesInCathalog(string path);
     public:
         Server();
 
