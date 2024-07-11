@@ -2,7 +2,12 @@
 #define TX "Tx"
 #define RX "Rx"
 
-MySocket::MySocket(string socketType) : sockfd(createSocket()), logger(new Logger(socketType)){
+MySocket::MySocket(string socketType){
+    if (socketType.empty())
+        return;
+        
+    sockfd = createSocket();
+    logger = new Logger(socketType);
     lastSent = (char*)calloc(MAX_MESSAGE_SIZE, 1);
 }
 
@@ -33,6 +38,7 @@ char* MySocket::collect(char* buffer){
     //ouviu nada       // escutou a si mesmo
     if ((len <= 0) || (!strcmp(lastSent, buffer))){
         memset(buffer, 0, BUFFER_SIZE);
+        cout << "collect" << endl;
         return buffer;
     }
 

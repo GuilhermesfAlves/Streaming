@@ -84,8 +84,8 @@ char Message::buildCrc(int size){
     cout << "tam:" << size << endl;
     // i = 1, pois o crc não deve validar o HEAD
     for (int i = 1; i < size; i++){
-        cout << "crc: " << (int)(unsigned char)crc << " " << message -> m[i] <<" char: " << (int)(unsigned char)message -> m[i] << " table: " << (int)(unsigned char)crc_table[(unsigned char)crc ^ (unsigned char)message -> m[i]] << endl;
-        crc = crc_table[(unsigned char)crc ^ (unsigned char)message -> m[i]];
+        // cout << "crc: " << (int)crc << " " << message -> m[i] <<" char: " << (int)(unsigned char)message -> m[i] << " table: " << (int)(unsigned char)crc_table[crc ^ (unsigned char)message -> m[i]] << endl;
+        crc = crc_table[crc ^ (unsigned char)message -> m[i]];
     }
 
     return crc;
@@ -111,9 +111,9 @@ char* Message::getData(){
     if (!message)
         return const_cast<char*>("32");
     // say first 14 bytes
-    for (int i = 0; i < 14; i++)
-        cout << message -> m[i];
-    cout << endl;
+    // for (int i = 0; i < 14; i++)
+    //     cout << message -> m[i];
+    // cout << endl;
     return message -> data;
 }
 
@@ -135,22 +135,20 @@ char Message::getMessageSize(){
     return msglen(message);
 }
 
-void Message::setMessage(char* msg){
-    if ((!strlen(msg))|| (msg[0] != HEAD_MARK)){
-        cout << "mensagem vazia" << endl;
-        if (message){
+int Message::setMessage(char* msg){
+    if ((!strlen(msg)) || (msg[0] != HEAD_MARK)){
+        if (message)
             message = NULL;
-        }
-        return;
+        return NOT_A_MESSAGE;
     }
     message = msgdup((msg_t*)msg);
     if (isValidCrc() && isValidType()){
-        cout << "is valid message" << endl; 
         //remove o crc da mensagem
         message -> m[message -> size + 3] = '\0';
-    } else {
-        message = NULL;
+        return VALID_MESSAGE;
     }
+    message = NULL;
+    return INVALID_MESSAGE;
 }
 
 int Message::dataAtoi(){

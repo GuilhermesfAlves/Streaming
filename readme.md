@@ -12,11 +12,11 @@ make
 ```
 
 ### Web interface:
-rode `ifconfig` para saber quais interfaces de rede estão disponíveis na sua máquina
+Execute `ifconfig` para saber quais interfaces de rede estão disponíveis na sua máquina
 ``` bash
 ifconfig
 ```
-Possíveis interfaces de rede: `lo`, `enp3s0`, `enp0s31f6` 
+Exemplos de interfaces de rede: `lo`, `enp3s0`, `enp0s31f6`, ...
 
 #### Loopback
 Use `lo` se você não estiver conectando duas máquinas através de um cabo.
@@ -46,22 +46,22 @@ O marcador de inicio sempre será `0111 1110`
 
 O campo tipo pode ser:
 
-| bits | código |
-|:----------:|:---:|
-|`00000` | ack |
-|`00001` | nack |
-|`01010` | lista |
-|`01011` | baixar |
-|`10000` | mostra na tela |
-|`10001` | descritor arquivo |
-|`10010` | dados |
-|`11110` | fim tx |
-|`11111` | erro|
+| bits | código | relação |
+|:----------:|:---:|:-----:|
+|`00000` | ack | servidor <-> cliente |
+|`00001` | nack | servidor <-> cliente |
+|`01010` | lista | servidor <-> cliente | Cliente pede ao servidor a lista, com list, e o servidor retorna a quantidade de elementos com list
+|`01011` | baixar | servidor <- cliente | Cliente requisita o download de tal arquivo
+|`10000` | mostra na tela | servidor -> cliente | Ao fim da transmissão dos dados do arquivo se manda o comando para se executar um player para executar tal arquivo
+|`10001` | descritor arquivo | servidor -> cliente | Após o servidor receber o pedido de download, ele retorna o tamanho do arquivo
+|`10010` | dados | servidor -> cliente | 
+|`11110` | fim tx | servidor <- cliente |
+|`11111` | erro | servidor <-> cliente |
 
 Os campos de erro podem estar com a seguinte mensagem em dados:
 
-| erro |  definição |
-|:----:|:----------:|
-| `1` | acesso negado |
-| `2` | não encontrado|
-| `3` | disco cheio   |
+| erro |  definição | relação | 
+|:----:|:----------:|:---------:|
+| `1` | acesso negado | servidor ? cliente |
+| `2` | não encontrado| servidor -> cliente |
+| `3` | disco cheio   | servidor <- cliente |

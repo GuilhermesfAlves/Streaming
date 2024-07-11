@@ -18,7 +18,7 @@
 
 using namespace std;
 
-#define DEFAULT_TIMEOUT 1000
+#define DEFAULT_TIMEOUT 1
 #define CLIENT_SOCKET_STR "Client"
 #define SERVER_SOCKET_STR "Server"
 #define CLIENT_MODE 0

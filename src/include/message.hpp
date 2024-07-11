@@ -5,6 +5,9 @@
 
 #define POSSIBLE_VALUES_OF_A_BYTE 256
 
+#define INVALID_MESSAGE -1
+#define VALID_MESSAGE 1
+#define NOT_A_MESSAGE 0
 
 #define MAX_MESSAGE_SIZE 67
 #define MIN_MESSAGE_SIZE 4
@@ -35,12 +38,12 @@
 #pragma pack(push, 1)
 typedef union{
     struct {
-        char head;
+        unsigned char head;
         unsigned char size : 6;
         unsigned char frame : 5;
         unsigned char type : 5;
         char data[MAX_DATA_SIZE];
-        char crc; 
+        unsigned char crc; 
     };
     char m[MAX_MESSAGE_SIZE];
 } msg_t;
@@ -58,7 +61,7 @@ public:
     //desconstruct message
     int serializeMessage(char* frame, char* type, char* data);
     char* getMessage();
-    void setMessage(char* msg);
+    int setMessage(char* msg);
     char* getData();
     char getType();
     char getFrame();
