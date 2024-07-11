@@ -46,6 +46,14 @@ void SlidingWindow::add(char type, const char* msg){
     queue.push_back(message -> deserializeMessage(type, msg));
 }
 
+void SlidingWindow::add(char type, ifstream* file){
+    char buffer[MAX_DATA_SIZE] = {0};
+    while (!file -> eof()){
+        file -> read(buffer, MAX_DATA_SIZE);
+        queue.push_back(message -> deserializeMessage(type, buffer));
+    }
+}
+
 char* SlidingWindow::alreadyCollected(char* buffer){
     cout << "already collected" << endl;
     for (msg_t* m : collected)
@@ -153,4 +161,18 @@ void SlidingWindow::printCollected(){
     int i = 1;
     for (msg_t* m : collected)
         cout << "(" << i++ << ")" << m -> data << endl;
+}
+
+int SlidingWindow::buildCollectedFile(char* fileName, ofstream* fileToBuild){
+    fileToBuild = new ofstream(fileName);
+
+    if (!fileToBuild -> is_open())
+        return 0;
+
+    for (msg_t* m : collected){
+        *fileToBuild << m -> data;
+        if (fileToBuild -> fail())
+            return -1;
+    }
+    return 1;
 }

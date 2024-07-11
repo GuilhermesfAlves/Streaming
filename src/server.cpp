@@ -23,9 +23,13 @@ int Server::run(){
             
             //caso no meio da transmissão dos dados o cliente resolva parar de receber ou
             //envie o erro de T_ERROR 3, de disco cheio, deve-se parar a transmissão
-            //if (file exists)
+
+            file -> open("example.txt", ios::binary);
+            if (!file -> is_open()){
+                //error file dont exists
+            }
             //while(!single.send(T_FILE_DESCRIPTOR, sizeof(file)))
-            //decomposefile()
+            window.add(T_DATA, file);
             while(!window.empty())
                 window.update();
 

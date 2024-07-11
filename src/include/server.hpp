@@ -6,6 +6,7 @@
     class Server: public Streaming{
     private:
         const string path = "/cathalogS";
+        ifstream* file;
         void getFilesInCathalog();
         void getFilesInCathalog(string path);
     public:
