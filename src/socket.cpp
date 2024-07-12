@@ -2,6 +2,8 @@
 #define TX "Tx"
 #define RX "Rx"
 
+MySocket* MySocket::instance = NULL;
+
 MySocket::MySocket(string socketType){
     if (socketType.empty())
         return;
@@ -9,6 +11,10 @@ MySocket::MySocket(string socketType){
     sockfd = createSocket();
     logger = new Logger(socketType);
     lastSent = (char*)calloc(MAX_MESSAGE_SIZE, 1);
+}
+
+MySocket* MySocket::instanceOf(string socketType){
+    return (instance)? instance : (instance = new MySocket(socketType));
 }
 
 MySocket::~MySocket(){
@@ -73,11 +79,6 @@ void MySocket::setSocketPromisc(int ifindex){
         close(sockfd);
         exit(EXIT_FAILURE);
     }
-    int debug = 1;
-    if (setsockopt(sockfd, SOL_SOCKET, SO_DEBUG, &debug, sizeof(debug)) < 0) {
-        perror("Erro ao definir SO_DEBUG");
-        close(sockfd);
-    }
 }
 
 void MySocket::setSocketTimeout(int timeoutMillis){
@@ -104,6 +105,5 @@ int MySocket::createSocket(){
         logger -> output("Build socket error");
         exit(EXIT_FAILURE);
     }
-    cout << "sock nº: "<< sockfd << endl;   
     return sockfd;
 }

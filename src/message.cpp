@@ -7,11 +7,16 @@
 
 unsigned int Message::frameCounter;
 unsigned char Message::crc_table[POSSIBLE_VALUES_OF_A_BYTE];
+Message* Message::instance = NULL;
 
 Message::Message(){
     message = NULL;
     makeCrcTable();
     frameCounter = 0;
+}
+
+Message* Message::instanceOf(){
+    return (instance)? instance : (instance = new Message());
 }
 
 msg_t* Message::deserializeMessage(const char type, const char* data){

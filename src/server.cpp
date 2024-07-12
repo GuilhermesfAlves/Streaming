@@ -3,16 +3,20 @@
 
 
 int Server::run(){
-
+    
+    int i;
+    char* fileName;
     do {
-        action = single.receive();
+        cout << "run - do" << endl;
+        i = 0;
+        action = single.receive(INFINIT_TIMEOUT);
         switch (action){
         case T_LIST:
             //ao receber o pedido de listagem de arquivos,
             //retorna a listagem com N aquivos do tipo T_LIST de novo
             //e manda em janela os nomes dos N arquivos do tipo T_FILE_DESCRIPTOR 
             getFilesInCathalog();
-            while (!single.send(T_LIST, fileCount));
+            single.send(T_LIST, fileCount);
             while (!window.empty())
                 window.update();
             break;
@@ -23,16 +27,21 @@ int Server::run(){
             
             //caso no meio da transmissão dos dados o cliente resolva parar de receber ou
             //envie o erro de T_ERROR 3, de disco cheio, deve-se parar a transmissão
-
-            file -> open("example.txt", ios::binary);
-            if (!file -> is_open()){
-                //error file dont exists
+            fileName = single.getDataStr();
+            if (!(file = new ifstream(fileName, ios::binary | ios::ate | ios::in)) || (!file -> is_open())){
+                single.send(T_ERROR, ERROR_FILE_NOT_FOUND);
+                break;
             }
-            //while(!single.send(T_FILE_DESCRIPTOR, sizeof(file)))
+            single.send(T_FILE_DESCRIPTOR, file -> tellg());
+            
+            file -> seekg(0, ios::beg);
             window.add(T_DATA, file);
-            while(!window.empty())
+            while(!window.empty()){
                 window.update();
-
+                if ((i % 10 == 0) && single.receive(OPTIONAL_TIMEOUT) == T_ERROR)
+                    break;
+            }
+            file -> close();
             break;
         case T_ERROR:
             break;
@@ -58,22 +67,15 @@ int Server::run(){
 
 Server::Server() : Streaming("Server"){}
 
-void Server::getFilesInCathalog(string path){
+void Server::getFilesInCathalog(){
     try {
-        for (const auto& entry : filesystem::directory_iterator(path)) {
+        for (const auto& entry : filesystem::directory_iterator(SERVER_CATHALOG_FOLDER)) {
             if (entry.is_regular_file()) {
                 ++fileCount;
                 window.add(T_FILE_DESCRIPTOR, entry.path().filename().string().c_str());
-            } else if (entry.is_directory()) {
-                cout << entry.path().filename().string() << endl;
-                getFilesInCathalog(path.append("/").append(entry.path().filename().string()));
-            }
+            } 
         }
     } catch (const filesystem::filesystem_error& e) {
         cerr << "Erro: " << e.what() << std::endl;
     }
-}
-
-void Server::getFilesInCathalog(){
-    getFilesInCathalog(path);
 }

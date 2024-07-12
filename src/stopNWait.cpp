@@ -3,54 +3,71 @@
 StopNWait::StopNWait(string socketType) : FluxControl(socketType){
 }
 
-int StopNWait::receive(){
+int StopNWait::receive(int timeout){
     int status;
 
-    while(!(status = listen()));
+    status = listen(timeout);
     
     switch (status){
     case INVALID_MESSAGE:
         respond(message -> getFrame(), T_NACK);
-        return T_INEXISTENT;
+        return NOT_A_MESSAGE;
     case VALID_MESSAGE:
         respond(message -> getFrame(), T_ACK);
         return message -> getType();
+    default:
+        return NOT_A_MESSAGE;
     }
 }
 
-int StopNWait::listen(){
+int StopNWait::listen(int timeout){
     char buffer[BUFFER_SIZE] = {0};
     long long start;
     int status;
+    int time;
 
-    start = timestamp();
+    if (timeout == INFINIT_TIMEOUT)
+        time = 0;
+    else if (timeout == OPTIONAL_TIMEOUT)
+        time = TIMEOUT_MILLIS << SHORTEST_TIMEOUT;
+    else 
+        time = TIMEOUT_MILLIS << timeout;
+    
     do {
-        status = message -> setMessage(socket -> collect(buffer));
-    } while ((status == NOT_A_MESSAGE) && (timestamp() - start <= (DEFAULT_TIMEOUT << 2)));
-
+        start = timestamp();
+        do {
+            status = message -> setMessage(socket -> collect(buffer));
+        } while ((status == NOT_A_MESSAGE) && ((!time) || (timestamp() - start <= time)));
+        time <<= 1;
+    } while ((status == NOT_A_MESSAGE) && (time < TIMEOUT_MILLIS << (timeout + TIMEOUT_TOLERATION)));
+    
+    if ((status == NOT_A_MESSAGE) && (timeout != OPTIONAL_TIMEOUT))
+        throw TimeoutException(timeout);
+    
     return status;
 }
 
-int StopNWait::send(unsigned char type, char* msg){
+void StopNWait::send(unsigned char type, char* msg){
     msg_t* toSend = message -> deserializeMessage(type, msg);
     do {
         socket -> post(toSend, message -> getMessageSize());
-    } while(!listen());
-
-    return confirmAck(message -> getFrame());    
+    } while(listen(SHORT_TIMEOUT) && !confirmAck(message -> getFrame()));
 }
 
-int StopNWait::send(unsigned char type, int msg){
+void StopNWait::send(unsigned char type, int msg){
     char buffer[BUFFER_SIZE] = {0};
     sprintf(buffer, "%d", msg);
-    return send(type, buffer);
+    send(type, buffer);
 }
 
-int StopNWait::send(unsigned char type, int msg){
-    return send(type, (char*)NULL);
+void StopNWait::send(unsigned char type){
+    send(type, (char*)NULL);
 }
-
 
 int StopNWait::getDataNumber(){
     return message -> dataAtoi();
+}
+
+char* StopNWait::getDataStr(){
+    return message -> getData();
 }

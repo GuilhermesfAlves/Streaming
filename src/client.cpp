@@ -4,14 +4,16 @@
 int Client::run(){
 
     do {
+        cout << "client - run - do" << endl;
         getUserAction();
         switch (action){
         case T_LIST:
             // request para server de quais as opções do catalogo
             // print na tela quais as opções T_LIST
-            while(!single.send(T_LIST));
-            while(!single.receive());
-            int fileCount = single.getDataNumber();
+            
+            single.send(T_LIST);
+            single.receive(LONG_TIMEOUT);
+            fileCount = single.getDataNumber();
             while (window.collectedSize() != fileCount)
                 window.getWindow();
             cout << "In cathalog:" << endl;
@@ -24,21 +26,28 @@ int Client::run(){
             //  recebe o tamanho do arquivo T_FILE_DESCRIPTOR
             //  recebe os dados do arquivo T_DATA
             //  enquanto isso pode permitir ao usuario cancelar o download
-            //  recebe a request de abrir um player
-            while(!single.send(T_DOWNLOAD, videoToDownload));
-            //while(!single.receive());
-            //int sizeOfFile =  single.getDataNumber();
-            //fileCount = sizeOfFile / MAX_DATA_LEN;
+            //  TODO recebe a request de abrir um player
+            single.send(T_DOWNLOAD, videoToDownload);
+            //possibilidade de receber uma mensagem de ERROR_FILE_NOT_FOUND
+            if (single.receive(DEFAULT_TIMEOUT) == T_ERROR){
+                cout << "Invalid file, try again" << endl;
+                action = T_LIST;
+                break;
+            } 
+            fileCount = single.getDataNumber() / MAX_DATA_SIZE;
             while (window.collectedSize() != fileCount)
                 window.getWindow();
-            //recomposeFile(on path)
-            
+
+            if (window.buildCollectedFile(videoToDownload) == FILE_FULL_DISK)
+                single.send(T_ERROR, ERROR_FULL_DISK);
+
+            window.flushCollected();
             break;
         default:
             break;
         }
     } while(action != T_END_TX);
-
+    single.send(T_END_TX);
 
     // window.add(T_PRINT, "012345678901234567890123456789012345678901234567890123456789012");
     // window.add(T_PRINT, "2 Second message! :)");
@@ -61,13 +70,12 @@ int Client::run(){
 }
 
 int Client::getUserAction(){
-    char entry;
 
     if (action == T_INEXISTENT){
         return menuAction();
     } else if (action == T_LIST){
         return cathalogAction();
-    }
+    } else return 0; //MUDAR
 }
 
 int Client::menuAction(){
@@ -93,18 +101,10 @@ int Client::menuAction(){
 }
 
 int Client::cathalogAction(){
-    int entry;
     
     cout << "Select a video" << endl;
-    while (1){
-        cin >> entry;
-        if ((entry < 1) || (entry > fileCount))
-            cout << "Type a valid option" << endl;
-        else
-            videoToDownload = entry;
-            return T_DOWNLOAD;
-    }
-    return (action = T_INEXISTENT);
+    cin >> videoToDownload;
+    return T_DOWNLOAD;
 }
 
 

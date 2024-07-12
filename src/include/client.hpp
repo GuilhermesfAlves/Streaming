@@ -5,7 +5,7 @@
 
     class Client: public Streaming{
     private:
-        int videoToDownload;
+        char videoToDownload[MAX_MESSAGE_SIZE];
         int getUserAction();
         int menuAction();
         int cathalogAction();

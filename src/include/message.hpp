@@ -9,6 +9,10 @@
 #define VALID_MESSAGE 1
 #define NOT_A_MESSAGE 0
 
+#define ERROR_ACCESS_DENIED 1
+#define ERROR_FILE_NOT_FOUND 2
+#define ERROR_FULL_DISK 3
+
 #define MAX_MESSAGE_SIZE 67
 #define MIN_MESSAGE_SIZE 4
 #define MAX_DATA_SIZE 63
@@ -51,11 +55,13 @@ typedef union{
 
 class Message{
 private:
+    static Message* instance;
     msg_t* message;
     unsigned int static frameCounter;
     static unsigned char crc_table[POSSIBLE_VALUES_OF_A_BYTE];
-public:
     Message();
+public:
+    static Message* instanceOf();
     //construct message
     msg_t* deserializeMessage(const char type, const char* data);
     //desconstruct message

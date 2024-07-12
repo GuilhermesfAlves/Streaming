@@ -1,18 +1,18 @@
 #ifndef SERVER
 #define SERVER
 
-    #include "streaming.hpp"
+#define SERVER_CATHALOG_FOLDER "/cathalogS"
 
-    class Server: public Streaming{
-    private:
-        const string path = "/cathalogS";
-        ifstream* file;
-        void getFilesInCathalog();
-        void getFilesInCathalog(string path);
-    public:
-        Server();
+#include "streaming.hpp"
 
-        int run() override;
-    };
+class Server: public Streaming{
+private:
+    ifstream* file;
+    void getFilesInCathalog();
+public:
+    Server();
+
+    int run() override;
+};
 
 #endif

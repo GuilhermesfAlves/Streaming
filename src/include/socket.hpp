@@ -8,9 +8,11 @@ private:
     int sockfd;
     int createSocket();
     char *lastSent;
+    MySocket(string socketType);
+    static MySocket* instance;
 public:
     Logger* logger;
-    MySocket(string socketType);
+    static MySocket* instanceOf(string socketType);
     ~MySocket();
     //bind socket to read and write on <lo> or <enp3s0>
     void toBind(int ifindex);

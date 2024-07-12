@@ -1,19 +1,19 @@
 #include "include/fluxControl.hpp"
 
 char FluxControl::lastFrame = MAX_FRAME;
-Message* FluxControl::message = new Message();
+Message* FluxControl::message = NULL;
 MySocket* FluxControl::socket = NULL;
 
 FluxControl::FluxControl(string socketType){
-    socket = new MySocket(socketType);
+    socket = MySocket::instanceOf(socketType);
+    message = Message::instanceOf();
     lastFrame = MAX_FRAME;
-    cout << "inicializado" << endl;
 }
 
 void FluxControl::connect(int ifindex){
     socket -> toBind(ifindex);
     socket -> setSocketPromisc(ifindex);
-    socket -> setSocketTimeout(DEFAULT_TIMEOUT);
+    socket -> setSocketTimeout(TIMEOUT_MILLIS);
 }
 
 long long FluxControl::timestamp() {
@@ -37,4 +37,10 @@ int FluxControl::respond(unsigned char frameToConfirm, char type){
     sprintf(buffer, "%d", frameToConfirm);
     socket -> post(message -> deserializeMessage(type, buffer), (size_t) message -> getMessageSize());    
     return 1;
+}
+
+TimeoutException::TimeoutException(int timeout) : timeout(timeout) {}
+
+const char* TimeoutException::what() const noexcept{
+    return strdup((messageException + to_string(TIMEOUT_MILLIS << (timeout + TIMEOUT_TOLERATION)) + "ms exploded").c_str());
 }

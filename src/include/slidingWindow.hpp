@@ -9,6 +9,10 @@
 
 #define WINDOW_SIZE 5
 
+#define FILE_OPEN_SUCCESS 0
+#define FILE_FULL_DISK 1
+#define FILE_OPEN_FAIL 2
+
 class SlidingWindow: public FluxControl{
 private:
     list<msg_t*> window;
@@ -30,7 +34,7 @@ public:
     int getResponse();
     void flushCollected();
     void printCollected();
-    int buildCollectedFile(char* fileName, ofstream* fileToBuild);
+    int buildCollectedFile(char* fileName);
 };
 
 #endif

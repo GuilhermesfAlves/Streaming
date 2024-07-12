@@ -6,7 +6,7 @@
 
 class Streaming{
 protected:
-    int action;
+    int action = T_INEXISTENT;
     int fileCount;
 public:
     StopNWait single;

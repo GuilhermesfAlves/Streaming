@@ -127,15 +127,10 @@ int SlidingWindow::getResponse(){
         window.pop_front();
     }
     // cout << "front popped" << endl;
-    char type;
     if (confirmAck(window.front() -> frame)){
         cout << "ACK confirmed" << endl;
         window.pop_front();
         return 1;
-    }
-    cout << "Not Ack" << endl;
-    if (type == T_NACK){
-        cout << "NACK confirmed" << endl;
     }
 
     showWindow();
@@ -158,21 +153,23 @@ void SlidingWindow::flushCollected(){
 }
 
 void SlidingWindow::printCollected(){
-    int i = 1;
     for (msg_t* m : collected)
-        cout << "(" << i++ << ")" << m -> data << endl;
+        cout << m -> data << endl;
 }
 
-int SlidingWindow::buildCollectedFile(char* fileName, ofstream* fileToBuild){
-    fileToBuild = new ofstream(fileName);
+int SlidingWindow::buildCollectedFile(char* fileName){
+    ofstream fileToBuild(fileName);
 
-    if (!fileToBuild -> is_open())
-        return 0;
+    if (!fileToBuild.is_open())
+        return FILE_OPEN_FAIL;
 
     for (msg_t* m : collected){
-        *fileToBuild << m -> data;
-        if (fileToBuild -> fail())
-            return -1;
+        fileToBuild << m -> data;
+        if (fileToBuild.fail()){
+            fileToBuild.close();
+            return FILE_FULL_DISK;
+        }
     }
-    return 1;
+    fileToBuild.close();
+    return FILE_OPEN_SUCCESS;
 }

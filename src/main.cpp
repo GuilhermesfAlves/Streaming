@@ -25,7 +25,13 @@ int main(int argc, char* argv[]) {
         cerr << "undefined mode, try <client> or <server>" << endl;
         exit(EXIT_FAILURE);
     }
-
     streaming -> toConnect(argv[2]);
-    return streaming -> run();
+    try{
+        streaming -> run();
+        return 0;
+    } catch (TimeoutException& e){
+        cout << e.what() << endl;
+        cout << "Finishing Execution" << endl;
+        return 1;
+    }
 }
