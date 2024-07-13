@@ -11,7 +11,7 @@ protected:
 public:
     StopNWait single;
     SlidingWindow window;
-    Streaming(string log_name);
+    Streaming(string log_name, char operationMode);
     virtual ~Streaming() = default;
 
     void toConnect(char* connection);

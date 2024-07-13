@@ -1,7 +1,7 @@
 #include "include/slidingWindow.hpp"
 #include <sys/time.h>
 
-SlidingWindow::SlidingWindow(string socketType) : FluxControl(socketType) {
+SlidingWindow::SlidingWindow(string socketType, char operationMode) : FluxControl(socketType, operationMode) {
 } 
 
 int SlidingWindow::empty(){
@@ -83,7 +83,7 @@ int SlidingWindow::getWindow(){
             return 0;
         }
         
-        collected.push_back((msg_t*)message -> getMessage());
+        collected.push_back(message -> getMessage());
         lastFrame = currentFrame;
     } while (timestamp() - start <= (DEFAULT_TIMEOUT << 2));
 

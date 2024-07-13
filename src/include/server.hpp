@@ -1,7 +1,7 @@
 #ifndef SERVER
 #define SERVER
 
-#define SERVER_CATHALOG_FOLDER "/cathalogS"
+#define SERVER_CATHALOG_FOLDER "cathalogS/"
 
 #include "streaming.hpp"
 

@@ -1,10 +1,11 @@
 #include "include/stopNWait.hpp"
 
-StopNWait::StopNWait(string socketType) : FluxControl(socketType){
+StopNWait::StopNWait(string socketType, char operationMode) : FluxControl(socketType, operationMode){
 }
 
 int StopNWait::receive(int timeout){
     int status;
+    msg_t* msg;
 
     status = listen(timeout);
     
@@ -13,7 +14,9 @@ int StopNWait::receive(int timeout){
         respond(message -> getFrame(), T_NACK);
         return NOT_A_MESSAGE;
     case VALID_MESSAGE:
+        msg = message -> getMessage();
         respond(message -> getFrame(), T_ACK);
+        message -> setMessage(msg);        
         return message -> getType();
     default:
         return NOT_A_MESSAGE;
@@ -50,8 +53,9 @@ int StopNWait::listen(int timeout){
 void StopNWait::send(unsigned char type, char* msg){
     msg_t* toSend = message -> deserializeMessage(type, msg);
     do {
+        cout << "!!!!sending iteration" << endl;
         socket -> post(toSend, message -> getMessageSize());
-    } while(listen(SHORT_TIMEOUT) && !confirmAck(message -> getFrame()));
+    } while(!listen(SHORT_TIMEOUT) && !confirmAck(message -> getFrame()));
 }
 
 void StopNWait::send(unsigned char type, int msg){

@@ -12,7 +12,7 @@ public:
     int getDataNumber();
     //returns data
     char* getDataStr();
-    StopNWait(string socketType);
+    StopNWait(string socketType, char operationMode);
     //Espera por uma única mensagem, que caso valida, envia ACK
     int receive(int timeout);
     //Envia mensagem, retorna 1 se o ack for confirmado, 0 caso contrario

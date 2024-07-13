@@ -13,7 +13,7 @@
 #define DEFAULT_TIMEOUT 2 // TIMEOUT MILLIS * 4
 #define LONG_TIMEOUT 4 // TIMEOUT MILLIS * 16
 
-#define TIMEOUT_MILLIS 5 
+#define TIMEOUT_MILLIS 50
 
 #define TIMEOUT_TOLERATION 3 // Duplicate timeout 3 times, duplicate per iteration
 
@@ -24,7 +24,7 @@ protected:
     static char lastFrame;
     long long timestamp();
 public: 
-    FluxControl(string socketType);
+    FluxControl(string socketType, char operationMode);
     static void connect(int ifindex);
     int confirmAck(unsigned char frameToConfirm);
     int respond(unsigned char frameToConfirm, char type);

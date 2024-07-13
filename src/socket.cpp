@@ -10,7 +10,6 @@ MySocket::MySocket(string socketType){
         
     sockfd = createSocket();
     logger = new Logger(socketType);
-    lastSent = (char*)calloc(MAX_MESSAGE_SIZE, 1);
 }
 
 MySocket* MySocket::instanceOf(string socketType){
@@ -19,7 +18,6 @@ MySocket* MySocket::instanceOf(string socketType){
 
 MySocket::~MySocket(){
     close(sockfd);
-    free(lastSent);
 }
 
 void MySocket::post(const void* buffer, size_t len){
@@ -32,7 +30,6 @@ void MySocket::post(const void* buffer, size_t len){
     while (bytes == -1)
         bytes = write(sockfd, buffer, len);
     // cout << "bytes sent: " << bytes << endl;
-    strcpy(lastSent, (char*)buffer);
 }
 
 char* MySocket::collect(char* buffer){
@@ -42,14 +39,13 @@ char* MySocket::collect(char* buffer){
     memset(buffer, 0, BUFFER_SIZE);
     len = read(sockfd, buffer, BUFFER_SIZE);
     //ouviu nada       // escutou a si mesmo
-    if ((len <= 0) || (!strcmp(lastSent, buffer))){
+    if (len <= 0){
         memset(buffer, 0, BUFFER_SIZE);
         cout << "collect" << endl;
         return buffer;
     }
 
     cout << "coletado len: " << len << " buffer: " << buffer << endl;
-    cout << "last Sent" << lastSent << endl;
     logger -> log(buffer, RX);
     return buffer;
 }

@@ -4,9 +4,9 @@ char FluxControl::lastFrame = MAX_FRAME;
 Message* FluxControl::message = NULL;
 MySocket* FluxControl::socket = NULL;
 
-FluxControl::FluxControl(string socketType){
+FluxControl::FluxControl(string socketType, char operationMode){
     socket = MySocket::instanceOf(socketType);
-    message = Message::instanceOf();
+    message = Message::instanceOf(operationMode);
     lastFrame = MAX_FRAME;
 }
 
@@ -39,8 +39,14 @@ int FluxControl::respond(unsigned char frameToConfirm, char type){
     return 1;
 }
 
+
+
 TimeoutException::TimeoutException(int timeout) : timeout(timeout) {}
 
 const char* TimeoutException::what() const noexcept{
-    return strdup((messageException + to_string(TIMEOUT_MILLIS << (timeout + TIMEOUT_TOLERATION)) + "ms exploded").c_str());
+    int timeExploded = 0;
+    for (int i = 1; i <= TIMEOUT_TOLERATION; i++)
+        timeExploded += TIMEOUT_MILLIS << (timeout + i);
+
+    return strdup((messageException + to_string(timeExploded) + "ms exploded").c_str());
 }

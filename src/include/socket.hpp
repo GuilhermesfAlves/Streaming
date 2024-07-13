@@ -7,7 +7,6 @@ class MySocket{
 private:
     int sockfd;
     int createSocket();
-    char *lastSent;
     MySocket(string socketType);
     static MySocket* instance;
 public:

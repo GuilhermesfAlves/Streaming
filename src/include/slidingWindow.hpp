@@ -24,7 +24,7 @@ private:
     char* alreadyCollected(char* buffer);
     void showWindow();
 public: 
-    SlidingWindow(string socketType);
+    SlidingWindow(string socketType, char operationMode);
     int empty();
     int collectedSize();
     void update();

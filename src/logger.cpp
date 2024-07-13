@@ -8,8 +8,10 @@ Logger::Logger(string fileName){
         exit(EXIT_FAILURE);
     }
 
-    logFile << "From \t| Size \t| Frame \t| Type \t| Data \t| Status" << endl;
-    logFile << "----------------------------------------------------" << endl;
+    logFile << "From \t| Size \t| Frm \t| Type \t|" <<\
+        " Data" << setw(63) << setfill(' ') << " \t| Status" << endl;
+    logFile << "------------------------------------------------------------------\
+    -----------------------------------------------------------" << endl;
 }
 
 Logger::~Logger(){
@@ -19,9 +21,6 @@ Logger::~Logger(){
 }
 
 void Logger::log(const char* message, const char* from){
-    // if (!strlen(message))
-    //     return;
-
     msg_t* m = (msg_t*)(message);
     char data[MAX_DATA_SIZE] = {0};
     strncpy(data, m -> data, m -> size);
@@ -30,7 +29,7 @@ void Logger::log(const char* message, const char* from){
      << "\t| " << setw(2) << setfill('0') << (int)(m -> size)\
       << "\t| " << setw(2) << setfill('0') << (int)(m -> frame)\
        << "\t| " << setw(2) << setfill('0') << (int)(m -> type)\
-        << "\t| " << data\
+        << "\t| " << data << setw(63) << setfill(' ')\
          << "\t| " << strerror(errno) << endl;
 }
 

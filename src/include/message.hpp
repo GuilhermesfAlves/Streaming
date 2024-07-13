@@ -49,6 +49,7 @@ typedef union{
         char data[MAX_DATA_SIZE];
         unsigned char crc; 
     };
+    //char body[MAX_MESSAGE_SIZE];
     char m[MAX_MESSAGE_SIZE];
 } msg_t;
 #pragma pack(pop)
@@ -58,16 +59,21 @@ private:
     static Message* instance;
     msg_t* message;
     unsigned int static frameCounter;
-    static unsigned char crc_table[POSSIBLE_VALUES_OF_A_BYTE];
-    Message();
+    static unsigned char crc_table_sender[POSSIBLE_VALUES_OF_A_BYTE];
+    static unsigned char crc_table_receiver[POSSIBLE_VALUES_OF_A_BYTE];
+    unsigned char crc_sender;
+    unsigned char crc_receiver;
+    Message(char operationMode);
 public:
-    static Message* instanceOf();
+    static Message* instanceOf(char operationMode);
     //construct message
     msg_t* deserializeMessage(const char type, const char* data);
     //desconstruct message
     int serializeMessage(char* frame, char* type, char* data);
-    char* getMessage();
+    msg_t* getMessage();
+    char* getBody();
     int setMessage(char* msg);
+    int setMessage(msg_t* msg);
     char* getData();
     char getType();
     char getFrame();
@@ -77,8 +83,9 @@ private:
     bool isValidType();
     bool isValidType(const char type);
     bool isValidCrc();
-    char buildCrc(int size);
-    void makeCrcTable();
+    char buildCrcSender(int size);
+    char buildCrcReceiver(int size);
+    void makeCrcTables();
 };
 
 int msglen(msg_t* msg);

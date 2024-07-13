@@ -1,6 +1,6 @@
 #include "include/streaming.hpp"
 
-Streaming::Streaming(string log_name): window(log_name), single(log_name){}
+Streaming::Streaming(string log_name, char operationMode): window(log_name, operationMode), single(log_name, operationMode){}
 
 void Streaming::toConnect(char* connection){
     FluxControl::connect(if_nametoindex(connection));
