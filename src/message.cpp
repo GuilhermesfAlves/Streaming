@@ -89,6 +89,15 @@ bool Message::isValidType(const char type){
     }
 }
 
+bool Message::isOppositeCrc(msg_t* msg){
+    char expectedCrc = 0x00;
+    unsigned char currentCrc = buildCrcSender(msglen(msg), msg);
+    cout << "current crc: " << (int) currentCrc << endl;
+    cout << "is valid crc: " << (expectedCrc == currentCrc) << endl;
+    return (expectedCrc == currentCrc);
+}
+
+
 bool Message::isValidCrc(){
     char expectedCrc = 0x00;
     unsigned char currentCrc = buildCrcReceiver(msglen(message));
@@ -97,15 +106,19 @@ bool Message::isValidCrc(){
     return (expectedCrc == currentCrc);
 }
 
-char Message::buildCrcSender(int size){
+char Message::buildCrcSender(int size, msg_t* msg){
     unsigned char crc = 0;
 
     // i = 1, pois o crc não deve validar o HEAD
     for (int i = 1; i < size; i++){
-        cout << "crc: " << (int)crc << " " << message -> m[i] <<" char: " << (int)(unsigned char)message -> m[i] << " table sender: " << (int)(unsigned char)crc_table_sender[crc ^ (unsigned char)message -> m[i]] << endl;
-        crc = crc_table_sender[crc ^ (unsigned char)message -> m[i]];
+        cout << "crc: " << (int)crc << " " << msg -> m[i] <<" char: " << (int)(unsigned char)msg -> m[i] << " table sender: " << (int)(unsigned char)crc_table_sender[crc ^ (unsigned char)msg -> m[i]] << endl;
+        crc = crc_table_sender[crc ^ (unsigned char)msg -> m[i]];
     }
     return crc;
+}
+
+char Message::buildCrcSender(int size){
+    return buildCrcSender(size, message);
 }
 
 char Message::buildCrcReceiver(int size){
@@ -169,7 +182,7 @@ char Message::getMessageSize(){
 }
 
 int Message::setMessage(char* msg){
-    if ((!strlen(msg)) || (msg[0] != HEAD_MARK)){
+    if ((!strlen(msg)) || (msg[0] != HEAD_MARK) || (isOppositeCrc((msg_t*) msg))){
         if (message)
             message = NULL;
         return NOT_A_MESSAGE;
@@ -205,11 +218,16 @@ int Message::dataAtoi(){
 }
 
 int msglen(msg_t* msg){
+    if (!msg)
+        return 0;
     return msg -> size + OVERHEAD;
 }
 
 msg_t* msgdup(msg_t* msg){
     int size = msglen(msg);
+
+    if (!size)
+        return NULL;
 
     msg_t* new_msg = (msg_t*) calloc((size_t)size + 1, 1);
     
@@ -223,4 +241,15 @@ msg_t* msgcpy(msg_t* dest, msg_t* src){
         dest -> m[i] = src -> m[i];
 
     return dest;
+}
+
+int msgncmp(msg_t* m1, msg_t* m2, int n){
+    if ((msglen(m1) < n) || (msglen(m2) < n))
+        return 1;
+
+    for (int i = 0; i < n; i++){
+        if (m1 -> m[i] != m2 -> m[i])
+            return 1;
+    }
+    return 0;
 }

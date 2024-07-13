@@ -8,10 +8,6 @@ int SlidingWindow::empty(){
     return (window.empty() && queue.empty());
 }
 
-int SlidingWindow::collectedSize(){
-    return collected.size();
-}
-
 void SlidingWindow:: showWindow(){
     for (msg_t* m : window)
         cout << "in window: " << m -> m << endl;
@@ -54,17 +50,6 @@ void SlidingWindow::add(char type, ifstream* file){
     }
 }
 
-char* SlidingWindow::alreadyCollected(char* buffer){
-    cout << "already collected" << endl;
-    for (msg_t* m : collected)
-        if (!strcmp(m -> m, buffer)){
-            memset(buffer, 0, BUFFER_SIZE);
-            break;
-        }
-
-    return buffer;
-}
-
 int SlidingWindow::getWindow(){
     unsigned char currentFrame;
     char buffer[BUFFER_SIZE];
@@ -83,7 +68,7 @@ int SlidingWindow::getWindow(){
             return 0;
         }
         
-        collected.push_back(message -> getMessage());
+        addCollectHistoric(message -> getMessage());
         lastFrame = currentFrame;
     } while (timestamp() - start <= (DEFAULT_TIMEOUT << 2));
 
@@ -137,6 +122,36 @@ int SlidingWindow::getResponse(){
     return 0;
 }
 
+int SlidingWindow::dataSize(){
+    return data.size();
+}
+
+void SlidingWindow::flushData(){
+    data.clear();
+}   
+
+void SlidingWindow::printData(){
+    for (msg_t* m : data)
+        cout << m -> data << endl;
+}
+
+int SlidingWindow::buildDataFile(char* fileName){
+    ofstream fileToBuild(fileName);
+
+    if (!fileToBuild.is_open())
+        return FILE_OPEN_FAIL;
+
+    for (msg_t* m : data){
+        fileToBuild << m -> data;
+        if (fileToBuild.fail()){
+            fileToBuild.close();
+            return FILE_FULL_DISK;
+        }
+    }
+    fileToBuild.close();
+    return FILE_OPEN_SUCCESS;
+}
+
 char* SlidingWindow::isNotInWindow(char* message){
     for (msg_t* msg : window){
         cout << "comparing: " << message << " com: " << msg -> m << endl;
@@ -146,30 +161,4 @@ char* SlidingWindow::isNotInWindow(char* message){
         }
     }
     return message;
-}
-
-void SlidingWindow::flushCollected(){
-    collected.clear();
-}
-
-void SlidingWindow::printCollected(){
-    for (msg_t* m : collected)
-        cout << m -> data << endl;
-}
-
-int SlidingWindow::buildCollectedFile(char* fileName){
-    ofstream fileToBuild(fileName);
-
-    if (!fileToBuild.is_open())
-        return FILE_OPEN_FAIL;
-
-    for (msg_t* m : collected){
-        fileToBuild << m -> data;
-        if (fileToBuild.fail()){
-            fileToBuild.close();
-            return FILE_FULL_DISK;
-        }
-    }
-    fileToBuild.close();
-    return FILE_OPEN_SUCCESS;
 }

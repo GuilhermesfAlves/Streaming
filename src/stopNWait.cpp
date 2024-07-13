@@ -39,14 +39,14 @@ int StopNWait::listen(int timeout){
     do {
         start = timestamp();
         do {
-            status = message -> setMessage(socket -> collect(buffer));
+            status = message -> setMessage(alreadyCollected(socket -> collect(buffer)));
         } while ((status == NOT_A_MESSAGE) && ((!time) || (timestamp() - start <= time)));
         time <<= 1;
     } while ((status == NOT_A_MESSAGE) && (time < TIMEOUT_MILLIS << (timeout + TIMEOUT_TOLERATION)));
     
     if ((status == NOT_A_MESSAGE) && (timeout != OPTIONAL_TIMEOUT))
         throw TimeoutException(timeout);
-    
+    addCollectHistoric(message -> getMessage());
     return status;
 }
 

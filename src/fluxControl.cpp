@@ -3,6 +3,7 @@
 char FluxControl::lastFrame = MAX_FRAME;
 Message* FluxControl::message = NULL;
 MySocket* FluxControl::socket = NULL;
+list<msg_t*> FluxControl::collected;
 
 FluxControl::FluxControl(string socketType, char operationMode){
     socket = MySocket::instanceOf(socketType);
@@ -39,7 +40,24 @@ int FluxControl::respond(unsigned char frameToConfirm, char type){
     return 1;
 }
 
+char* FluxControl::alreadyCollected(char* buffer){
+    int exit;
+    for (msg_t* m : collected){
+        if (!(exit = msgncmp(m,(msg_t*) buffer, msglen(m) - 1))){
+            cout << "already collected" << endl;
+            memset(buffer, 0, BUFFER_SIZE);
+            break;
+        }
+        cout << "msgncmp exit = " << exit << endl;
+    }
+    return buffer;
+}
 
+void FluxControl::addCollectHistoric(msg_t* msg){
+    if (collected.size() >= COLLECTED_HISTORIC_SIZE)
+        collected.pop_back();
+    collected.push_front(msg);
+}
 
 TimeoutException::TimeoutException(int timeout) : timeout(timeout) {}
 

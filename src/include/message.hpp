@@ -83,7 +83,9 @@ private:
     bool isValidType();
     bool isValidType(const char type);
     bool isValidCrc();
+    bool isOppositeCrc(msg_t* msg);
     char buildCrcSender(int size);
+    char buildCrcSender(int size, msg_t* msg);
     char buildCrcReceiver(int size);
     void makeCrcTables();
 };
@@ -91,5 +93,6 @@ private:
 int msglen(msg_t* msg);
 msg_t* msgdup(msg_t* msg);
 msg_t* msgcpy(msg_t* dest, msg_t* src);
+int msgncmp(msg_t* m1, msg_t* m2, int n);
 
 #endif 
