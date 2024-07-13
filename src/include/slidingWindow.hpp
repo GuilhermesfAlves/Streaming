@@ -15,16 +15,14 @@ private:
     list<msg_t*> data;
     void sendWindow();
     void refillWindow();
-    char* isNotInWindow(char* message);
     void showWindow();
 public: 
     SlidingWindow(string socketType, char operationMode);
     int empty();
-    void update();
     void add(char type, const char* msg);
     void add(char type, ifstream* file);
-    int getWindow();
-    int getResponse();
+    int receive(int timeout);
+    int send(int timeout);
     int dataSize();
     void flushData();
     void printData();

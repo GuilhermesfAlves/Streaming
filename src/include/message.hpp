@@ -49,8 +49,7 @@ typedef union{
         char data[MAX_DATA_SIZE];
         unsigned char crc; 
     };
-    //char body[MAX_MESSAGE_SIZE];
-    char m[MAX_MESSAGE_SIZE];
+    char body[MAX_MESSAGE_SIZE];
 } msg_t;
 #pragma pack(pop)
 

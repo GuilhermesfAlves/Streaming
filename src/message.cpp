@@ -36,6 +36,7 @@ msg_t* Message::deserializeMessage(const char type, const char* data){
     if (!isValidType(type))
         return NULL;
     message -> head = HEAD_MARK;
+    cout << "MESSAGE FRAME COUNTER: " << frameCounter << endl;
     message -> frame = frameCounter++;
     message -> type = type;
     if (data == NULL){
@@ -63,7 +64,7 @@ msg_t* Message::getMessage(){
 }
 
 char* Message::getBody(){
-    return message -> m;
+    return message -> body;
 }
 
 bool Message::isValidType(){
@@ -111,8 +112,7 @@ char Message::buildCrcSender(int size, msg_t* msg){
 
     // i = 1, pois o crc não deve validar o HEAD
     for (int i = 1; i < size; i++){
-        cout << "crc: " << (int)crc << " " << msg -> m[i] <<" char: " << (int)(unsigned char)msg -> m[i] << " table sender: " << (int)(unsigned char)crc_table_sender[crc ^ (unsigned char)msg -> m[i]] << endl;
-        crc = crc_table_sender[crc ^ (unsigned char)msg -> m[i]];
+        crc = crc_table_sender[crc ^ (unsigned char)msg -> body[i]];
     }
     return crc;
 }
@@ -126,8 +126,7 @@ char Message::buildCrcReceiver(int size){
 
     // i = 1, pois o crc não deve validar o HEAD
     for (int i = 1; i < size; i++){
-        cout << "crc: " << (int)crc << " " << message -> m[i] <<" char: " << (int)(unsigned char)message -> m[i] << " table receiver: " << (int)(unsigned char)crc_table_receiver[crc ^ (unsigned char)message -> m[i]] << endl;
-        crc = crc_table_receiver[crc ^ (unsigned char)message -> m[i]];
+        crc = crc_table_receiver[crc ^ (unsigned char)message -> body[i]];
     }
     return crc;
 }
@@ -156,10 +155,6 @@ void Message::makeCrcTables(){
 char* Message::getData(){
     if (!message)
         return const_cast<char*>("32");
-    // say first 14 bytes
-    // for (int i = 0; i < 14; i++)
-    //     cout << message -> m[i];
-    // cout << endl;
     return message -> data;
 }
 
@@ -183,17 +178,15 @@ char Message::getMessageSize(){
 
 int Message::setMessage(char* msg){
     if ((!strlen(msg)) || (msg[0] != HEAD_MARK) || (isOppositeCrc((msg_t*) msg))){
-        if (message)
-            message = NULL;
+        message = NULL;
         return NOT_A_MESSAGE;
     }
     message = msgdup((msg_t*)msg);
     if (isValidCrc() && isValidType()){
         //remove o crc da mensagem
-        message -> m[message -> size + 3] = '\0';
+        message -> body[msglen((msg_t*)msg) - 1] = '\0';
         return VALID_MESSAGE;
     }
-    message = NULL;
     return INVALID_MESSAGE;
 }
 
@@ -238,18 +231,23 @@ msg_t* msgcpy(msg_t* dest, msg_t* src){
     int size = msglen(src);
     
     for (int i = 0; i < size; i++)
-        dest -> m[i] = src -> m[i];
+        dest -> body[i] = src -> body[i];
 
     return dest;
 }
 
 int msgncmp(msg_t* m1, msg_t* m2, int n){
-    if ((msglen(m1) < n) || (msglen(m2) < n))
+    if ((msglen(m1) < n) || (msglen(m2) < n)){
+        cout << "msgncmp::len diff" << endl;
         return 1;
+    }
 
     for (int i = 0; i < n; i++){
-        if (m1 -> m[i] != m2 -> m[i])
+        if (m1 -> body[i] != m2 -> body[i]){
+            cout << "msgncmp::char diff" << endl;
             return 1;
+        }
     }
+    cout << "msgncmp::no diff"<< endl;
     return 0;
 }

@@ -10,17 +10,7 @@ int SlidingWindow::empty(){
 
 void SlidingWindow:: showWindow(){
     for (msg_t* m : window)
-        cout << "in window: " << m -> m << endl;
-}
-
-void SlidingWindow::update(){
-    refillWindow();
-    sendWindow();
-    // showWindow();
-    if (!window.empty()){
-        getResponse();
-    }
-    cout << "end getResponse" << endl;
+        cout << "in window: " << m -> body << endl;
 }
 
 void SlidingWindow::refillWindow(){
@@ -32,9 +22,10 @@ void SlidingWindow::refillWindow(){
 }
 
 void SlidingWindow::sendWindow(){
+    cout << "window size: " << window.size() << endl;
     for (msg_t* msg: window){
-        cout << "sending window: " << msg-> m << "." << endl;
-        socket -> post(msg-> m, (size_t)msglen(msg));
+        cout << "sending window: " << msg-> body << "." << endl;
+        socket -> post(msg-> body, (size_t)msglen(msg));
     }
 }
 
@@ -50,75 +41,74 @@ void SlidingWindow::add(char type, ifstream* file){
     }
 }
 
-int SlidingWindow::getWindow(){
+int SlidingWindow::receive(int timeout){
+    int last_status = NOT_A_MESSAGE;
+    int status;
+    int i;
     unsigned char currentFrame;
-    char buffer[BUFFER_SIZE];
-    long long start;
-    int before = lastFrame;
-    start = timestamp();
+    unsigned char expectedFrame;
+    msg_t* msg;
 
-    do {
-        message -> setMessage(alreadyCollected(socket -> collect(buffer)));
-        currentFrame = message -> getFrame();
-        if ((currentFrame == INEXISTENT_FRAME) || (currentFrame == lastFrame))
+    for (int j = 0; j < TIMEOUT_TOLERATION; j++){
+        cout << "------" << endl;
+        i = 0;
+        while (((status = listen(timeout)) == NOT_A_MESSAGE) && (++i < TIMEOUT_TOLERATION)) ;
+        if (status == NOT_A_MESSAGE)
             continue;
 
-        if (((lastFrame + 1) & MAX_FRAME) != currentFrame){
-            respond((lastFrame + 1) & MAX_FRAME, T_NACK);
-            return 0;
-        }
+        currentFrame = message -> getFrame();
+        expectedFrame = (lastReceivedFrame + 1) & MAX_FRAME;
+        if (expectedFrame != currentFrame)
+            status = INVALID_MESSAGE;
+
+        if (status == INVALID_MESSAGE)
+            break;
         
+        msg = message -> getMessage();
+        data.push_back(message -> getMessage());
         addCollectHistoric(message -> getMessage());
-        lastFrame = currentFrame;
-    } while (timestamp() - start <= (DEFAULT_TIMEOUT << 2));
-
-    if (lastFrame == before)
-        return 0;
-
-    respond(lastFrame, T_ACK);
-
-    return 1;
+        lastReceivedFrame = currentFrame;
+        last_status = status;
+        cout << "######" << endl;
+    };
+    message -> setMessage(msg);
+    return marshallACK(last_status);
 }
 
-int SlidingWindow::getResponse(){
-    char buffer[BUFFER_SIZE] = {0};
-    long long start;
+int SlidingWindow::send(int timeout){
+    int status;
+    int i;
+    int frame;
 
-    start = timestamp();
-    unsigned char frame = INEXISTENT_FRAME;
-    do {
-    //    cout << "last frame: " << (int) frame << endl;
-    //    cout << "listening" << endl;
-        message -> setMessage(isNotInWindow(socket -> collect(buffer)));
+    if (window.empty())
+        refillWindow();
+    while (!window.empty()){
+        i = 0;
+        cout << "send " << endl;
+        do {
+            cout << "i: " << i << endl;
+            refillWindow();
+            sendWindow();
+        } while (((status = listen(timeout + i)) == NOT_A_MESSAGE) && !confirmAck() && (++i < TIMEOUT_TOLERATION));
+
+        cout << "exited" << endl;
+        if (status == NOT_A_MESSAGE)
+            throw TimeoutException(timeout);
+
+        addCollectHistoric(message -> getMessage());
+        lastReceivedFrame = message -> getFrame();
+        while ((!window.empty()) && (frame != (window.front() -> frame)) && (window.size() > 1)){
+            window.pop_front();
+        }
+
+        if (confirmAck(window.front() -> frame)){
+            cout << "ACK confirmed" << endl;
+            window.pop_front();
+            continue;
+        }
+        cout << "ACK not confirmed" << endl;
         showWindow();
-    //    cout << "end1" << endl;
-    } while (((frame = message -> dataAtoi()) == INEXISTENT_FRAME) && (timestamp() - start <= (DEFAULT_TIMEOUT << 2)));
-
-//    cout << "time exploded: " << (bool) (start - timestamp() > (DEFAULT_TIMEOUT << 1)) << endl;
-//    cout << "frame: " << (int) frame << endl;
-    if (frame == INEXISTENT_FRAME)
-        return 0;
-//    cout << "not inexistent" << endl;
-//    cout << "received type: " << (int) message -> getType() << endl;
-//    cout << "window front frame: " << (int) window.front() -> frame << endl;
-//    cout << "Get data: " << message -> getData() << endl;
-//    cout << !window.empty() << endl;
-//    cout << (bool)((unsigned char)frame != (unsigned char)(window.front() -> frame)) << endl;
-//    cout << (int)(unsigned char)frame << endl;
-//    cout << (int)(unsigned char)window.front() -> frame << endl;
-    lastFrame = message -> getFrame();
-    while ((!window.empty()) && (frame != (window.front() -> frame)) && (window.size() > 1)){
-        // cout << "pop" << endl;
-        window.pop_front();
     }
-    // cout << "front popped" << endl;
-    if (confirmAck(window.front() -> frame)){
-        cout << "ACK confirmed" << endl;
-        window.pop_front();
-        return 1;
-    }
-
-    showWindow();
     return 0;
 }
 
@@ -150,15 +140,4 @@ int SlidingWindow::buildDataFile(char* fileName){
     }
     fileToBuild.close();
     return FILE_OPEN_SUCCESS;
-}
-
-char* SlidingWindow::isNotInWindow(char* message){
-    for (msg_t* msg : window){
-        cout << "comparing: " << message << " com: " << msg -> m << endl;
-        if (!strcmp(msg -> m, message)){
-            memset(message, 0, BUFFER_SIZE);
-            break;
-        }
-    }
-    return message;
 }

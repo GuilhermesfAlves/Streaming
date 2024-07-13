@@ -4,9 +4,6 @@
 #include "fluxControl.hpp"
 
 class StopNWait: public FluxControl{
-private:
-    //Escuta a entrada do socket
-    int listen(int timeout);
 public: 
     //atoi data
     int getDataNumber();
