@@ -15,7 +15,6 @@ private:
     list<msg_t*> data;
     void sendWindow();
     void refillWindow();
-    void showWindow();
 public: 
     SlidingWindow(string socketType, char operationMode);
     int empty();

@@ -29,7 +29,7 @@ private:
     int getTime(int timeout);
 protected:
     static Message* message;
-    static MySocket* socket;
+    static Socket* socket;
     static list<msg_t*> collected;
     static char lastReceivedFrame;
     int marshallACK(int status);

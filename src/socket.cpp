@@ -2,9 +2,9 @@
 #define TX "Tx"
 #define RX "Rx"
 
-MySocket* MySocket::instance = NULL;
+Socket* Socket::instance = NULL;
 
-MySocket::MySocket(string socketType){
+Socket::Socket(string socketType){
     if (socketType.empty())
         return;
         
@@ -12,45 +12,38 @@ MySocket::MySocket(string socketType){
     logger = new Logger(socketType);
 }
 
-MySocket* MySocket::instanceOf(string socketType){
-    return (instance)? instance : (instance = new MySocket(socketType));
+Socket* Socket::instanceOf(string socketType){
+    return (instance)? instance : (instance = new Socket(socketType));
 }
 
-MySocket::~MySocket(){
+Socket::~Socket(){
     close(sockfd);
 }
 
-void MySocket::post(const void* buffer, size_t len){
-    // cout << "posting message len: " << len << endl;
-    // cout << "buffer: " << (char*)buffer << endl;
+void Socket::post(const void* buffer, size_t len){
+    int bytes = -1;
     if (len < 14)   
         len = 14;
-    int bytes = -1;
     logger -> log((char*)buffer, TX);
     while (bytes == -1)
         bytes = write(sockfd, buffer, len);
-    // cout << "bytes sent: " << bytes << endl;
 }
 
-char* MySocket::collect(char* buffer){
+char* Socket::collect(char* buffer){
     int len;
 
-    cout << "trying" << endl;
     memset(buffer, 0, BUFFER_SIZE);
     len = read(sockfd, buffer, BUFFER_SIZE);
-    //ouviu nada       // escutou a si mesmo
-    if (len <= 0){
+    //ouviu algo 
+    if (len > 0)
+        logger -> log(buffer, RX);
+    else 
         memset(buffer, 0, BUFFER_SIZE);
-        cout << "collect" << endl;
-        return buffer;
-    }
 
-    cout << "coletado len: " << len << " buffer: " << buffer << endl;
-    logger -> log(buffer, RX);
     return buffer;
 }
 
-void MySocket::toBind(int ifindex){
+void Socket::toBind(int ifindex){
     sockaddr_ll endereco;
 
     endereco.sll_family = AF_PACKET;
@@ -58,12 +51,12 @@ void MySocket::toBind(int ifindex){
     endereco.sll_ifindex = ifindex;
     // Inicializa socket
     if (bind(sockfd, (struct sockaddr*) &endereco, sizeof(endereco)) < 0) {
-        logger -> output("Error: Can't Bind");
+        cerr << "Error: Can't Bind" << endl;
         exit(EXIT_FAILURE);
     }
 }
 
-void MySocket::setSocketPromisc(int ifindex){
+void Socket::setSocketPromisc(int ifindex){
     struct packet_mreq mr = {0};
 
     mr.mr_ifindex = ifindex;
@@ -77,7 +70,7 @@ void MySocket::setSocketPromisc(int ifindex){
     }
 }
 
-void MySocket::setSocketTimeout(int timeoutMillis){
+void Socket::setSocketTimeout(int timeoutMillis){
     struct timeval timeout;
 
     timeout.tv_sec = timeoutMillis / 1000;
@@ -96,9 +89,9 @@ void MySocket::setSocketTimeout(int timeoutMillis){
     }
 }
 
-int MySocket::createSocket(){
+int Socket::createSocket(){
     if ((sockfd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL))) < 0){
-        logger -> output("Build socket error");
+        cerr << "Build socket error" << endl;
         exit(EXIT_FAILURE);
     }
     return sockfd;

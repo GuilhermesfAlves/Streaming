@@ -1,6 +1,5 @@
 #ifndef __STREAMING__
 #define __STREAMING__
-#include "utils.hpp"
 #include "slidingWindow.hpp"
 #include "stopNWait.hpp"
 
@@ -17,6 +16,5 @@ public:
     void toConnect(char* connection);
     int virtual run() = 0;
 };
-
 
 #endif

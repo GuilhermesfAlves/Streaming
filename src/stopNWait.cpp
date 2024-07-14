@@ -15,9 +15,6 @@ int StopNWait::receive(int timeout){
     unsigned char currentFrame = message -> getFrame();
     unsigned char expectedFrame = (lastReceivedFrame + 1) & MAX_FRAME;
     if (expectedFrame != currentFrame){
-        cout << "IS NOT EXPECTED FRAME" << endl;
-        cout << "Expected: " << (int) expectedFrame << endl;
-        cout << "Current: " << (int) currentFrame << endl;
         status = INVALID_MESSAGE;
     }
     if (status == VALID_MESSAGE){
@@ -33,9 +30,6 @@ void StopNWait::send(unsigned char type, char* msg){
     int status;
     int i = 0;
     do {
-        cout << "!!!!sending iteration" << endl;
-        cout << toSend -> body << endl;
-
         socket -> post(toSend, msglen(toSend));
     } while(((status = listen(SHORT_TIMEOUT << i)) == NOT_A_MESSAGE) && !confirmAck(toSend -> frame) && (++i < TIMEOUT_TOLERATION));
 

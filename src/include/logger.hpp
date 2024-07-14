@@ -2,6 +2,7 @@
 #define __LOGGER__
 
 #include "utils.hpp"
+#include "message.hpp"
 
 class Logger{
 private:
@@ -10,7 +11,6 @@ public:
     Logger(string fileName);
     ~Logger();
     void log(const char* message, const char* from);
-    void output(const char* message);
 };
 
 #endif

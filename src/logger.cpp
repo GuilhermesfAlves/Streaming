@@ -4,7 +4,7 @@
 Logger::Logger(string fileName){
     logFile.open(fileName.append("_logger.log"));
     if (!logFile.is_open()){
-        output("Error creating logger");
+        cout << "Error creating logger" << endl;
         exit(EXIT_FAILURE);
     }
 
@@ -15,9 +15,8 @@ Logger::Logger(string fileName){
 }
 
 Logger::~Logger(){
-    if (logFile.is_open()){
+    if (logFile.is_open())
         logFile.close();
-    }
 }
 
 void Logger::log(const char* message, const char* from){
@@ -29,10 +28,6 @@ void Logger::log(const char* message, const char* from){
      << "\t| " << setw(2) << setfill('0') << (int)(m -> size)\
       << "\t| " << setw(2) << setfill('0') << (int)(m -> frame)\
        << "\t| " << setw(2) << setfill('0') << (int)(m -> type)\
-        << "\t| " << data << setw(63) << setfill(' ')\
+        << "\t| " << setw(63) << setfill(' ') << data \
          << "\t| " << strerror(errno) << endl;
-}
-
-void Logger::output(const char* message){
-    cout << message << endl;
 }

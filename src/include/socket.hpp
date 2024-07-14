@@ -3,16 +3,16 @@
 #include "utils.hpp"
 #include "logger.hpp"
 
-class MySocket{
+class Socket{
 private:
     int sockfd;
     int createSocket();
-    MySocket(string socketType);
-    static MySocket* instance;
+    Socket(string socketType);
+    static Socket* instance;
 public:
     Logger* logger;
-    static MySocket* instanceOf(string socketType);
-    ~MySocket();
+    static Socket* instanceOf(string socketType);
+    ~Socket();
     //bind socket to read and write on <lo> or <enp3s0>
     void toBind(int ifindex);
     //set socket as PROMISC

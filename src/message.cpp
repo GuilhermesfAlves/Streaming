@@ -36,7 +36,6 @@ msg_t* Message::deserializeMessage(const char type, const char* data){
     if (!isValidType(type))
         return NULL;
     message -> head = HEAD_MARK;
-    cout << "MESSAGE FRAME COUNTER: " << frameCounter << endl;
     message -> frame = frameCounter++;
     message -> type = type;
     if (data == NULL){
@@ -47,7 +46,6 @@ msg_t* Message::deserializeMessage(const char type, const char* data){
     message -> size = strlen(data);
     strncpy(message -> data, data, message -> size);
     message -> data[message -> size] = buildCrcSender(msglen(message) - 1);
-    cout << (int)(unsigned char)message -> data[message -> size] << endl;
     
     return message;
 }
@@ -93,8 +91,6 @@ bool Message::isValidType(const char type){
 bool Message::isOppositeCrc(msg_t* msg){
     char expectedCrc = 0x00;
     unsigned char currentCrc = buildCrcSender(msglen(msg), msg);
-    cout << "current crc: " << (int) currentCrc << endl;
-    cout << "is valid crc: " << (expectedCrc == currentCrc) << endl;
     return (expectedCrc == currentCrc);
 }
 
@@ -102,8 +98,6 @@ bool Message::isOppositeCrc(msg_t* msg){
 bool Message::isValidCrc(){
     char expectedCrc = 0x00;
     unsigned char currentCrc = buildCrcReceiver(msglen(message));
-    cout << "current crc: " << (int) currentCrc << endl;
-    cout << "is valid crc: " << (expectedCrc == currentCrc) << endl;
     return (expectedCrc == currentCrc);
 }
 
@@ -238,16 +232,13 @@ msg_t* msgcpy(msg_t* dest, msg_t* src){
 
 int msgncmp(msg_t* m1, msg_t* m2, int n){
     if ((msglen(m1) < n) || (msglen(m2) < n)){
-        cout << "msgncmp::len diff" << endl;
         return 1;
     }
 
     for (int i = 0; i < n; i++){
         if (m1 -> body[i] != m2 -> body[i]){
-            cout << "msgncmp::char diff" << endl;
             return 1;
         }
     }
-    cout << "msgncmp::no diff"<< endl;
     return 0;
 }

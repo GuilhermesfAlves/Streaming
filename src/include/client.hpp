@@ -8,9 +8,9 @@
 class Client: public Streaming{
 private:
     char videoToDownload[MAX_MESSAGE_SIZE];
-    int getUserAction();
-    int menuAction();
-    int cathalogAction();
+    void getUserAction();
+    void menuAction();
+    void cathalogAction();
 public:
     Client();
     int run() override;

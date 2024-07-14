@@ -5,6 +5,11 @@
 
 #define POSSIBLE_VALUES_OF_A_BYTE 256
 
+#define CLIENT_SOCKET_STR "Client"
+#define SERVER_SOCKET_STR "Server"
+#define CLIENT_MODE 0
+#define SERVER_MODE 1
+
 #define INVALID_MESSAGE -1
 #define VALID_MESSAGE 1
 #define NOT_A_MESSAGE 0

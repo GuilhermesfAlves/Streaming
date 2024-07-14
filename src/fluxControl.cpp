@@ -2,11 +2,11 @@
 
 char FluxControl::lastReceivedFrame = MAX_FRAME;
 Message* FluxControl::message = NULL;
-MySocket* FluxControl::socket = NULL;
+Socket* FluxControl::socket = NULL;
 list<msg_t*> FluxControl::collected;
 
 FluxControl::FluxControl(string socketType, char operationMode){
-    socket = MySocket::instanceOf(socketType);
+    socket = Socket::instanceOf(socketType);
     message = Message::instanceOf(operationMode);
     lastReceivedFrame = MAX_FRAME;
 }
@@ -25,16 +25,12 @@ long long FluxControl::timestamp() {
 
 int FluxControl::confirmAck(unsigned char frameToConfirm){
     int frame = message -> dataAtoi();
-    if (message -> getType() == T_NACK)
-        cout << "NACK " << frame << endl;
 
     return ((message -> getType() == T_ACK) && (frame == frameToConfirm));
 }
 
 int FluxControl::confirmAck(){
     int frame = message -> dataAtoi();
-    if (message -> getType() == T_NACK)
-        cout << "NACK " << frame << endl;
 
     return ((message -> getType() == T_ACK) && (frame != INEXISTENT_FRAME));
 }
@@ -63,11 +59,9 @@ int FluxControl::listen(int timeout){
     long long start;
     int status;
     int time = getTime(timeout);
-    cout << "time: "<<time << endl;
-    // do {
+
     start = timestamp();
     do {
-        cout << "." << endl;
         status = message -> setMessage(alreadyCollected(socket -> collect(buffer)));
     } while ((status == NOT_A_MESSAGE) && ((time == INFINIT_TIMEOUT) || (timestamp() - start <= time)));
 
@@ -78,16 +72,13 @@ int FluxControl::marshallACK(int status){
     msg_t* msg;
     switch (status){
     case VALID_MESSAGE:
-        cout << ">>RECV Valid Message" << endl;
         msg = message -> getMessage();
         respond(message -> getFrame(), T_ACK);
         message -> setMessage(msg);
         return message -> getType();
     case INVALID_MESSAGE:
-        cout << ">>RECV Invalid Message" << endl;
         respond(message -> getFrame(), T_NACK);
     default:
-        cout << ">>RECV Not a Message" << endl;
         return NOT_A_MESSAGE;
     }
 }
@@ -95,13 +86,9 @@ int FluxControl::marshallACK(int status){
 char* FluxControl::alreadyCollected(char* buffer){
     int exit;
     for (msg_t* m : collected){
-        cout << "on collected: " << m -> body << endl;
         if (!(exit = msgncmp(m,(msg_t*) buffer, msglen(m) - 1))){
-            cout << "already collected" << endl;
             memset(buffer, 0, BUFFER_SIZE);
             break;
-        } else{
-            cout << "new collected" << endl;
         }
     }
     return buffer;

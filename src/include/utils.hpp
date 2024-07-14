@@ -14,14 +14,9 @@
 #include <linux/if_packet.h>
 #include <net/if.h>
 #include <sys/time.h>
-#include "message.hpp"
 
 using namespace std;
 
-#define CLIENT_SOCKET_STR "Client"
-#define SERVER_SOCKET_STR "Server"
-#define CLIENT_MODE 0
-#define SERVER_MODE 1
-#define BUFFER_SIZE MAX_MESSAGE_SIZE
+#define BUFFER_SIZE 67
 
 #endif
