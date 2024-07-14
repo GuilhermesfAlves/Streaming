@@ -9,6 +9,7 @@ int Client::run(){
     // single.receive(SHORT_TIMEOUT);
 
 // TEST ############################## Working
+    char* path;
     do {
         cout << "client - run - do" << endl;
         getUserAction();
@@ -30,8 +31,6 @@ int Client::run(){
             window.printData();
             window.flushData();
 
-            cout << "finished" << endl;
-            return 0;
             break;
         case T_DOWNLOAD:
             // função para escolha de arquivo para baixar
@@ -40,6 +39,7 @@ int Client::run(){
             //  recebe os dados do arquivo T_DATA
             //  enquanto isso pode permitir ao usuario cancelar o download
             //  TODO recebe a request de abrir um player
+            cout << "Download" << endl;
             single.send(T_DOWNLOAD, videoToDownload);
             //possibilidade de receber uma mensagem de ERROR_FILE_NOT_FOUND
             if (single.receive(SHORTEST_TIMEOUT) == T_ERROR){
@@ -47,14 +47,20 @@ int Client::run(){
                 action = T_LIST;
                 break;
             } 
-            fileCount = single.getDataNumber() / MAX_DATA_SIZE;
+            fileCount = (single.getDataNumber() / MAX_DATA_SIZE) + 1;
+            //funcionando até aqui
             while (window.dataSize() != fileCount)
                 window.receive(DEFAULT_TIMEOUT);
 
-            if (window.buildDataFile(videoToDownload) == FILE_FULL_DISK)
+            path = new char[strlen(CLIENT_CATHALOG_FOLDER) + strlen(videoToDownload)];
+            strcpy(path, CLIENT_CATHALOG_FOLDER);
+            strcat(path, videoToDownload);
+            if (window.buildDataFile(path) == FILE_FULL_DISK)
                 single.send(T_ERROR, ERROR_FULL_DISK);
-
+            delete path;
             window.flushData();
+            cout << "Finnishing" << endl;
+            return 1;
             break;
         default:
             break;
@@ -116,7 +122,10 @@ int Client::menuAction(){
 int Client::cathalogAction(){
     
     cout << "Select a video" << endl;
+    cout << ">" << endl;
     cin >> videoToDownload;
+    cout << "Video " << videoToDownload << endl;
+    action = T_DOWNLOAD;
     return T_DOWNLOAD;
 }
 

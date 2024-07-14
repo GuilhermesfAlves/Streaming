@@ -13,7 +13,7 @@ int Server::run(){
     
 
 // TEST ############################## Working
-
+    char* path;
     char* fileName;
     do {
         cout << "run - do" << endl;
@@ -30,8 +30,6 @@ int Server::run(){
             cout << "sending window" << endl;
             getFilesInCathalogToWindow();
             window.send(LONG_TIMEOUT);
-            cout << "finnished" << endl;
-            return 0;
             break;
         case T_DOWNLOAD:
             //confere se o arquivo referenciado na mensagem existe,
@@ -40,17 +38,24 @@ int Server::run(){
             
             //caso no meio da transmissão dos dados o cliente resolva parar de receber ou
             //envie o erro de T_ERROR 3, de disco cheio, deve-se parar a transmissão
+            cout << "Download" << endl;
             fileName = single.getDataStr();
-            if (!(file = new ifstream(fileName, ios::binary | ios::ate | ios::in)) || (!file -> is_open())){
+            path = new char[strlen(SERVER_CATHALOG_FOLDER) + strlen(fileName)];
+            strcpy(path, SERVER_CATHALOG_FOLDER);
+            strcat(path, fileName);
+            if (!(file = new ifstream(path, ios::binary | ios::ate | ios::in)) || (!file -> is_open())){
                 single.send(T_ERROR, ERROR_FILE_NOT_FOUND);
                 break;
             }
             single.send(T_FILE_DESCRIPTOR, file -> tellg());
-            
+            //funcionando até aqui
+            // envia arquivo
             file -> seekg(0, ios::beg);
             window.add(T_DATA, file);
             window.send(LONG_TIMEOUT);
             file -> close();
+            cout << "Finnishing" << endl;
+            return 0;
             break;
         case T_ERROR:
             break;
