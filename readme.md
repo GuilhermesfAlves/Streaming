@@ -19,8 +19,7 @@ ifconfig
 ```
 Exemplos de interfaces de rede: `lo`, `enp3s0`, `enp0s31f6`, `eno1`, ...
 
-#### Loopback
-Use `lo` se você não estiver conectando duas máquinas através de um cabo.
+> Use `lo` se você não estiver conectando duas máquinas através de um cabo.
 
 Primeiro você deve inicializar em um terminal o servidor.
 ```bash
@@ -45,7 +44,7 @@ Assim você estabelecerá a conexão entre eles.
 
 O marcador de inicio sempre será `0111 1110`
 
-Quando o cliente fala com o servidor o polinomio do CRC-8, conhecido como (ATM HEC), é `0x07`. Quando o servidor quer falar com o cliente o polinomio do CRC-8, conhecido como Dallas/Maxim, é `0x31`. Isto permite o uso de loopback na aplicação, pois permite o programa saber se deve tratar tal mensagem.
+Para verificação da mensagem é usado como Crc-8 o polinômio 0x07.
 
 #### Tipo pode valer:
 
@@ -53,12 +52,12 @@ Quando o cliente fala com o servidor o polinomio do CRC-8, conhecido como (ATM H
 |:----------:|:---:|:-----:|
 |`00000` | ack | servidor `<->` cliente |
 |`00001` | nack | servidor `<->` cliente |
-|`01010` | lista | servidor `<->` cliente | Cliente pede ao servidor a lista, e o servidor retorna a quantidade de elementos
+|`01010` | lista | servidor `<-` cliente | Cliente pede ao servidor a lista, e o servidor retorna a quantidade de elementos
 |`01011` | baixar | servidor `<-` cliente | Cliente requisita o download de tal arquivo
 |`10000` | mostra na tela | servidor `->` cliente | Ao fim da transmissão dos dados do arquivo se manda o comando para se executar um player para executar tal arquivo
 |`10001` | descritor arquivo | servidor `->` cliente | Após o servidor receber o pedido de download, ele retorna o tamanho do arquivo
 |`10010` | dados | servidor `->` cliente | 
-|`11110` | fim tx | servidor `<-` cliente |
+|`11110` | fim tx | servidor `->` cliente |
 |`11111` | erro | servidor `<->` cliente |
 
 #### Erros podem ser:
