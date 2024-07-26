@@ -9,7 +9,7 @@ Logger::Logger(string fileName){
     }
 
     logFile << "From \t| Size \t| Frm \t| Type \t|" <<\
-        " Data" << setw(63) << setfill(' ') << " \t| Status" << endl;
+        " Data" << setw(63) << setfill(' ') << "\t\t| Status" << endl;
     logFile << "------------------------------------------------------------------"
      "-----------------------------------------------------------" << endl;
 }
@@ -27,7 +27,8 @@ void Logger::log(const char* message, const char* from){
     logFile << "\t" << from \
      << "\t| " << setw(2) << setfill('0') << (int)(m -> size)\
       << "\t| " << setw(2) << setfill('0') << (int)(m -> frame)\
-       << "\t| " << setw(2) << setfill('0') << (int)(m -> type)\
-        << "\t| " << setw(63) << setfill(' ') << data \
-         << "\t| " << strerror(errno) << endl;
+       << "\t| " << setw(2) << setfill('0') << (int)(m -> type)
+        << "\t| " << setw(63) << setfill(' ');
+    logFile.write(data, m -> size);
+    logFile << "\t| " << strerror(errno) << endl;
 }

@@ -37,9 +37,8 @@ char* Socket::collect(char* buffer){
     //ouviu algo 
     if (len > 0)
         logger -> log(buffer, RX);
-    else 
+    else
         memset(buffer, 0, BUFFER_SIZE);
-
     return buffer;
 }
 

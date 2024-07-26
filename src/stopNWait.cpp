@@ -1,7 +1,6 @@
 #include "include/stopNWait.hpp"
 
-StopNWait::StopNWait(string socketType, char operationMode) : FluxControl(socketType, operationMode){
-}
+StopNWait::StopNWait(string socketType) : FluxControl(socketType){}
 
 int StopNWait::receive(int timeout){
     int status;
@@ -14,9 +13,9 @@ int StopNWait::receive(int timeout){
     
     unsigned char currentFrame = message -> getFrame();
     unsigned char expectedFrame = (lastReceivedFrame + 1) & MAX_FRAME;
-    if (expectedFrame != currentFrame){
+    if (expectedFrame != currentFrame)
         status = INVALID_MESSAGE;
-    }
+    
     if (status == VALID_MESSAGE){
         addCollectHistoric(message -> getMessage());
         lastReceivedFrame = currentFrame;
@@ -29,6 +28,7 @@ void StopNWait::send(unsigned char type, char* msg){
     msg_t* toSend = message -> deserializeMessage(type, msg);
     int status;
     int i = 0;
+    addSentHistoric(toSend);
     do {
         socket -> post(toSend, msglen(toSend));
     } while(((status = listen(SHORT_TIMEOUT << i)) == NOT_A_MESSAGE) && !confirmAck(toSend -> frame) && (++i < TIMEOUT_TOLERATION));

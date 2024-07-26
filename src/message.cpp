@@ -2,35 +2,27 @@
 
 #define SIZE_OF_BYTE_IN_BITS 8
 #define MOST_SIGNIFICANT_BIT 0b10000000 //128
-#define CRC_POLYNOMIAL_SERVER 0x07 // 7
-#define CRC_POLYNOMIAL_CLIENT 0x31 // 49
+#define CRC_POLYNOMIAL 0x07 // 7
 
 unsigned int Message::frameCounter;
-unsigned char Message::crc_table_sender[POSSIBLE_VALUES_OF_A_BYTE];
-unsigned char Message::crc_table_receiver[POSSIBLE_VALUES_OF_A_BYTE];
+unsigned char Message::crc_table[POSSIBLE_VALUES_OF_A_BYTE];
 Message* Message::instance = NULL;
 
-Message::Message(char operationMode){
-    switch (operationMode){
-    case CLIENT_MODE:
-        crc_sender = CRC_POLYNOMIAL_CLIENT;
-        crc_receiver = CRC_POLYNOMIAL_SERVER;
-        break;
-    case SERVER_MODE:
-        crc_sender = CRC_POLYNOMIAL_SERVER;
-        crc_receiver = CRC_POLYNOMIAL_CLIENT;
-        break;
-    }
+Message::Message(){
     message = NULL;
-    makeCrcTables();
+    makeCrcTable();
     frameCounter = 0;
 }
 
-Message* Message::instanceOf(char operationMode){
-    return (instance)? instance : (instance = new Message(operationMode));
+Message* Message::instanceOf(){
+    return (instance)? instance : (instance = new Message());
 }
 
 msg_t* Message::deserializeMessage(const char type, const char* data){
+    return deserializeMessage(type, data, datalen(data));
+}
+
+msg_t* Message::deserializeMessage(const char type, const char* data, const int tam){
     message = static_cast<msg_t*>(calloc(MAX_MESSAGE_SIZE, 1));
 
     if (!isValidType(type))
@@ -40,12 +32,12 @@ msg_t* Message::deserializeMessage(const char type, const char* data){
     message -> type = type;
     if (data == NULL){
         message -> size = 0;
-        message -> data[0] = buildCrcSender(message -> size + 3);
+        message -> data[0] = buildCrc(message -> size + 3);
         return message;
     }
-    message -> size = strlen(data);
-    strncpy(message -> data, data, message -> size);
-    message -> data[message -> size] = buildCrcSender(msglen(message) - 1);
+    message -> size = tam;
+    datancpy(message -> data, data, message -> size);
+    message -> data[message -> size] = buildCrc(msglen(message) - 1);
     
     return message;
 }
@@ -57,6 +49,11 @@ int Message::serializeMessage(char* frame, char* type, char* data){
 
     return 1;
 }
+
+int Message::getSize(){
+    return message -> size;
+}
+
 msg_t* Message::getMessage(){
     return message;
 }
@@ -88,61 +85,41 @@ bool Message::isValidType(const char type){
     }
 }
 
-bool Message::isOppositeCrc(msg_t* msg){
-    char expectedCrc = 0x00;
-    unsigned char currentCrc = buildCrcSender(msglen(msg), msg);
-    return (expectedCrc == currentCrc);
-}
-
-
 bool Message::isValidCrc(){
-    char expectedCrc = 0x00;
-    unsigned char currentCrc = buildCrcReceiver(msglen(message));
+    return isValidCrc(message);
+}
+
+bool Message::isValidCrc(msg_t* msg){
+    unsigned char expectedCrc = 0x00;
+    unsigned char currentCrc = buildCrc(msglen(msg), msg);
     return (expectedCrc == currentCrc);
 }
 
-char Message::buildCrcSender(int size, msg_t* msg){
+char Message::buildCrc(int size, msg_t* msg){
     unsigned char crc = 0;
 
     // i = 1, pois o crc não deve validar o HEAD
     for (int i = 1; i < size; i++){
-        crc = crc_table_sender[crc ^ (unsigned char)msg -> body[i]];
+        crc = crc_table[crc ^ (unsigned char)msg -> body[i]];
     }
     return crc;
 }
 
-char Message::buildCrcSender(int size){
-    return buildCrcSender(size, message);
+char Message::buildCrc(int size){
+    return buildCrc(size, message);
 }
 
-char Message::buildCrcReceiver(int size){
-    unsigned char crc = 0;
-
-    // i = 1, pois o crc não deve validar o HEAD
-    for (int i = 1; i < size; i++){
-        crc = crc_table_receiver[crc ^ (unsigned char)message -> body[i]];
-    }
-    return crc;
-}
-
-void Message::makeCrcTables(){
+void Message::makeCrcTable(){
 
     for (int i = 0; i < POSSIBLE_VALUES_OF_A_BYTE; ++i) {
-        unsigned char crc_s = i;
-        unsigned char crc_r = i;
+        unsigned char crc = i;
         for (char j = 0; j < SIZE_OF_BYTE_IN_BITS; ++j) {
-            if (crc_s & MOST_SIGNIFICANT_BIT) 
-                crc_s = (crc_s << 1) ^ crc_sender;
+            if (crc & MOST_SIGNIFICANT_BIT) 
+                crc = (crc << 1) ^ CRC_POLYNOMIAL;
             else 
-                crc_s <<= 1;
-
-            if (crc_r & MOST_SIGNIFICANT_BIT) 
-                crc_r = (crc_r << 1) ^ crc_receiver;
-            else 
-                crc_r <<= 1;
+                crc <<= 1;
         }
-        crc_table_sender[i] = crc_s;
-        crc_table_receiver[i] = crc_r;
+        crc_table[i] = crc;
     }
 }
 
@@ -171,8 +148,7 @@ char Message::getMessageSize(){
 }
 
 int Message::setMessage(char* msg){
-    if ((!strlen(msg)) || (msg[0] != HEAD_MARK) || (isOppositeCrc((msg_t*) msg))){
-        message = NULL;
+    if ((!msg) || (!strlen(msg)) || (msg[0] != HEAD_MARK)){
         return NOT_A_MESSAGE;
     }
     message = msgdup((msg_t*)msg);
@@ -204,6 +180,12 @@ int Message::dataAtoi(){
     return atoi(message -> data);
 }
 
+int datalen(const char* data){
+    int i = 0;
+    for (;data && data[i] != '\0'; i++){}
+    return i;
+}
+
 int msglen(msg_t* msg){
     if (!msg)
         return 0;
@@ -231,14 +213,17 @@ msg_t* msgcpy(msg_t* dest, msg_t* src){
 }
 
 int msgncmp(msg_t* m1, msg_t* m2, int n){
-    if ((msglen(m1) < n) || (msglen(m2) < n)){
+    if ((msglen(m1) < n) || (msglen(m2) < n))
         return 1;
-    }
 
-    for (int i = 0; i < n; i++){
-        if (m1 -> body[i] != m2 -> body[i]){
+    for (int i = 0; i < n; i++)
+        if (m1 -> body[i] != m2 -> body[i])
             return 1;
-        }
-    }
+    
     return 0;
+}
+
+void datancpy(char* dest, const char* src, int n){
+    for (int i = 0; i < n; i++)
+        dest[i] = src[i];
 }

@@ -1,9 +1,10 @@
 #include "include/client.hpp"
 
+Client::Client() : Streaming(CLIENT_SOCKET_STR){}
 
 int Client::run(){
 
-    char* path;
+    string path;
     do {
         getUserAction();
         switch (action){
@@ -12,15 +13,12 @@ int Client::run(){
             // print na tela quais as opções T_LIST
             
             single.send(T_LIST);
-            single.receive(LONG_TIMEOUT);
-            fileCount = single.getDataNumber();
-            while (window.dataSize() != fileCount){
-                window.receive(SHORTEST_TIMEOUT);
-            }
+            // single.receive(SHORT_TIMEOUT);
+            // fileCount = single.getDataNumber();
+            // while (window.dataSize() != fileCount){
             cout << "In cathalog:" << endl;
-            window.printData();
-            window.flushData();
-
+            window.receive(SHORTEST_TIMEOUT, 1);
+            // }
             break;
         case T_DOWNLOAD:
             // função para escolha de arquivo para baixar
@@ -36,18 +34,21 @@ int Client::run(){
                 action = T_LIST;
                 break;
             } 
-            fileCount = (single.getDataNumber() / MAX_DATA_SIZE) + 1;
-            //funcionando até aqui
-            while (window.dataSize() != fileCount)
-                window.receive(DEFAULT_TIMEOUT);
-
-            path = new char[strlen(CLIENT_CATHALOG_FOLDER) + strlen(videoToDownload)];
-            strcpy(path, CLIENT_CATHALOG_FOLDER);
-            strcat(path, videoToDownload);
-            if (window.buildDataFile(path) == FILE_FULL_DISK)
-                single.send(T_ERROR, ERROR_FULL_DISK);
-            delete path;
-            window.flushData();
+            fileSize = single.getDataNumber();
+            path = CLIENT_CATHALOG_FOLDER;
+            path.append(videoToDownload);
+            free(videoToDownload);
+            {
+                int fileStatus;
+                string command;
+                if ((fileStatus = window.tryBuildDataFile(path.c_str(), fileSize)) != FILE_OPEN_SUCCESS)
+                    single.send(T_ERROR, fileStatus);
+                else {
+                    window.receive(SHORTEST_TIMEOUT, fileSize);
+                    command = "./vlc-wrapper.sh " + path;
+                    system(command.c_str());
+                }
+            }
             action = T_INEXISTENT;
             break;
         default:
@@ -91,11 +92,9 @@ void Client::menuAction(){
 }
 
 void Client::cathalogAction(){
-    
+    char str[MAX_DATA_SIZE];
     cout << "Select a video" << endl << ">";
-    cin >> videoToDownload;
+    cin >> str;
+    videoToDownload = strdup(str);
     action = T_DOWNLOAD;
 }
-
-
-Client::Client() : Streaming(CLIENT_SOCKET_STR, CLIENT_MODE){}

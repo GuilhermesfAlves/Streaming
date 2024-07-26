@@ -1,6 +1,8 @@
 #include "include/server.hpp"
 #include <filesystem>
 
+Server::Server() : Streaming(SERVER_SOCKET_STR){}
+
 int Server::run(){
 
     char* path;
@@ -12,8 +14,8 @@ int Server::run(){
             //ao receber o pedido de listagem de arquivos,
             //retorna a listagem com N aquivos do tipo T_LIST de novo
             //e manda em janela os nomes dos N arquivos do tipo T_FILE_DESCRIPTOR 
-            getFilesInCathalogCount();
-            single.send(T_LIST, fileCount);
+            // getFilesInCathalogCount();
+            // single.send(T_LIST, fileCount);
             getFilesInCathalogToWindow();
             window.send(LONG_TIMEOUT);
             break;
@@ -34,7 +36,7 @@ int Server::run(){
             }
             single.send(T_FILE_DESCRIPTOR, file -> tellg());
             file -> seekg(0, ios::beg);
-            window.add(T_DATA, file);
+            window.add(file);
             window.send(LONG_TIMEOUT);
             file -> close();
             break;
@@ -48,28 +50,14 @@ int Server::run(){
     return 0;
 }
 
-Server::Server() : Streaming(SERVER_SOCKET_STR, SERVER_MODE){}
-
-void Server::getFilesInCathalogCount(){
-    try {
-        for (const auto& entry : filesystem::directory_iterator(SERVER_CATHALOG_FOLDER)) {
-            if (entry.is_regular_file()) {
-                ++fileCount;
-            } 
-        }
-    } catch (const filesystem::filesystem_error& e) {
-        cerr << "Erro: " << e.what() << std::endl;
-    }
-}
-
 void Server::getFilesInCathalogToWindow(){
     try {
-        for (const auto& entry : filesystem::directory_iterator(SERVER_CATHALOG_FOLDER)) {
-            if (entry.is_regular_file()) {
-                window.add(T_FILE_DESCRIPTOR, entry.path().filename().string().c_str());
-            } 
-        }
+        for (const auto& entry : filesystem::directory_iterator(SERVER_CATHALOG_FOLDER)) 
+            if (entry.is_regular_file()) 
+                window.add(T_PRINT, entry.path().filename().string().c_str());
+
+        window.add(T_END_TX, NULL);
     } catch (const filesystem::filesystem_error& e) {
-        cerr << "Erro: " << e.what() << std::endl;
+        cerr << "Erro: " << e.what() << endl;
     }
 }

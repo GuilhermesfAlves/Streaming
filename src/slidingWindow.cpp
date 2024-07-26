@@ -1,7 +1,8 @@
 #include "include/slidingWindow.hpp"
 #include <sys/time.h>
+#include <iomanip>
 
-SlidingWindow::SlidingWindow(string socketType, char operationMode) : FluxControl(socketType, operationMode) {} 
+SlidingWindow::SlidingWindow(string socketType) : FluxControl(socketType) {} 
 
 int SlidingWindow::empty(){
     return (window.empty() && queue.empty());
@@ -14,54 +15,86 @@ void SlidingWindow::refillWindow(){
     }
 }
 
-void SlidingWindow::sendWindow(){
+int SlidingWindow::sendWindow(){
     for (msg_t* msg: window){
-        socket -> post(msg-> body, (size_t)msglen(msg));
+        socket -> post(msg -> body, (size_t)msglen(msg));
+        addSentHistoric(msg);
     }
+    return (int)(unsigned char) window.back() -> frame;
 }
 
 void SlidingWindow::add(char type, const char* msg){
     queue.push_back(message -> deserializeMessage(type, msg));
 }
 
-void SlidingWindow::add(char type, ifstream* file){
-    char buffer[MAX_DATA_SIZE] = {0};
-    while (!file -> eof()){
-        file -> read(buffer, MAX_DATA_SIZE);
-        queue.push_back(message -> deserializeMessage(type, buffer));
+void SlidingWindow::add(ifstream* file) {
+    char buffer[MAX_DATA_SIZE];
+    int tam, sum = 0;
+
+    memset(buffer, 0, BUFFER_SIZE);
+    while ((tam = file -> readsome(buffer, MAX_DATA_SIZE)) || (file -> gcount() > 0)){
+        queue.push_back(message -> deserializeMessage(T_DATA, buffer, tam));
+        memset(buffer, 0, BUFFER_SIZE);
+        sum += tam;
     }
+    add(T_END_TX, NULL);
 }
 
-int SlidingWindow::receive(int timeout){
+void SlidingWindow::receive(int timeout, int size){
     int last_status = NOT_A_MESSAGE;
-    int status;
+    int status, end = 0;
     int i;
     unsigned char currentFrame;
     unsigned char expectedFrame;
-    msg_t* msg;
+    msg_t* msg = message -> getMessage();
 
-    for (int j = 0; j < TIMEOUT_TOLERATION; j++){
-        i = 0;
-        while (((status = listen(timeout)) == NOT_A_MESSAGE) && (++i < TIMEOUT_TOLERATION)) ;
-        if (status == NOT_A_MESSAGE)
-            continue;
+    while (!end){
+        for (int count = 0, j = 0; j < TIMEOUT_TOLERATION && count < WINDOW_SIZE && !end;){
+            j++;
+            i = 0;
+            while (((status = listen(timeout + i)) == NOT_A_MESSAGE) && (i++ < j));
 
-        currentFrame = message -> getFrame();
-        expectedFrame = (lastReceivedFrame + 1) & MAX_FRAME;
-        if (expectedFrame != currentFrame)
-            status = INVALID_MESSAGE;
-
-        if (status == INVALID_MESSAGE)
-            break;
-        
-        msg = message -> getMessage();
-        data.push_back(message -> getMessage());
-        addCollectHistoric(message -> getMessage());
-        lastReceivedFrame = currentFrame;
-        last_status = status;
-    };
-    message -> setMessage(msg);
-    return marshallACK(last_status);
+            if (status == NOT_A_MESSAGE)
+                continue;
+            j = 0;
+            currentFrame = message -> getFrame();
+            expectedFrame = (lastReceivedFrame + 1) & MAX_FRAME;
+            if (expectedFrame != currentFrame){
+                status = INVALID_MESSAGE;
+            }
+            if (status == INVALID_MESSAGE){
+                message -> setMessage(msg);
+                last_status = status;
+                break;
+            }
+            
+            msg = message -> getMessage();
+            int type = message -> getType();
+            switch (type){
+            case T_PRINT:
+                cout << message -> getData() << endl;
+                break;
+            case T_DATA:        
+                fileToBuild.write(message -> getData(), message -> getSize());
+                dataReceived += message -> getSize();
+                cout << "\r\033[K" << ">>" << fixed << setprecision(2) << setw(6) << setfill('0') << (float) dataReceived / size * 100 << "%" << flush;
+                break;
+            case T_END_TX:
+                end = 1;
+                cout << endl;
+                fileToBuild.close();
+                break;
+            default:
+                break;
+            }
+            count++;
+            addCollectHistoric(msg);
+            lastReceivedFrame = currentFrame;
+            last_status = status;
+        }
+        message -> setMessage(msg);
+        marshallACK(last_status);    
+    }
 }
 
 int SlidingWindow::send(int timeout){
@@ -69,58 +102,43 @@ int SlidingWindow::send(int timeout){
     int i;
     int frame;
 
-    if (window.empty())
-        refillWindow();
-    while (!window.empty()){
+    while (!empty()){
         i = 0;
         do {
             refillWindow();
             sendWindow();
-        } while (((status = listen(timeout + i)) == NOT_A_MESSAGE) && !confirmAck() && (++i < TIMEOUT_TOLERATION));
+        } while (((status = listen(timeout + i)) == NOT_A_MESSAGE) && !confirmAck() && (i++ < TIMEOUT_TOLERATION));
 
         if (status == NOT_A_MESSAGE)
             throw TimeoutException(timeout);
 
         addCollectHistoric(message -> getMessage());
         lastReceivedFrame = message -> getFrame();
-        while ((!window.empty()) && (frame != (window.front() -> frame)) && (window.size() > 1)){
+        while ((!window.empty()) && (frame != (window.front() -> frame)) && (window.size() > 1))
             window.pop_front();
-        }
-
+        
         if (confirmAck(window.front() -> frame)){
             window.pop_front();
-            continue;
         }
     }
     return 0;
 }
 
-int SlidingWindow::dataSize(){
-    return data.size();
-}
 
-void SlidingWindow::flushData(){
-    data.clear();
-}   
-
-void SlidingWindow::printData(){
-    for (msg_t* m : data)
-        cout << m -> data << endl;
-}
-
-int SlidingWindow::buildDataFile(char* fileName){
-    ofstream fileToBuild(fileName);
+int SlidingWindow::tryBuildDataFile(const char* fileName, unsigned int size){
+    fileToBuild.open(fileName);
 
     if (!fileToBuild.is_open())
         return FILE_OPEN_FAIL;
 
-    for (msg_t* m : data){
-        fileToBuild << m -> data;
-        if (fileToBuild.fail()){
-            fileToBuild.close();
-            return FILE_FULL_DISK;
-        }
-    }
+    fileToBuild.seekp(size - 1);
+    fileToBuild.write("", 1);
+
     fileToBuild.close();
+
+    if (!fileToBuild)
+        return FILE_FULL_DISK;
+    
+    fileToBuild.open(fileName, ios::out | ios::binary);
     return FILE_OPEN_SUCCESS;
 }

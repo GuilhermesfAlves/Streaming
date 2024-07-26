@@ -14,13 +14,14 @@
 #define DEFAULT_TIMEOUT 3 // TIMEOUT MILLIS * 8
 #define LONG_TIMEOUT 4 // TIMEOUT MILLIS * 16
 
-#define TIMEOUT_MILLIS 50
+#define TIMEOUT_MILLIS 10
 
 #define TIMEOUT_TOLERATION 3 // Duplicate timeout 3 times, duplicate per iteration
 
 #define FILE_OPEN_SUCCESS 0
-#define FILE_FULL_DISK 1
-#define FILE_OPEN_FAIL 2
+#define FILE_OPEN_FAIL 1
+#define FILE_NOT_FOUND 2
+#define FILE_FULL_DISK 3
 
 #define COLLECTED_HISTORIC_SIZE 16
 
@@ -31,14 +32,17 @@ protected:
     static Message* message;
     static Socket* socket;
     static list<msg_t*> collected;
+    static list<msg_t*> sent;
     static char lastReceivedFrame;
     int marshallACK(int status);
     long long timestamp();
     void addCollectHistoric(msg_t* msg);
+    void addSentHistoric(msg_t* msg);
     char* alreadyCollected(char* buffer);
+    int alreadySent(int status);
     int listen(int timeout);
 public: 
-    FluxControl(string socketType, char operationMode);
+    FluxControl(string socketType);
     static void connect(int ifindex);
     int confirmAck(unsigned char frameToConfirm);
     int confirmAck();

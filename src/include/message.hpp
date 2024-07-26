@@ -63,15 +63,13 @@ private:
     static Message* instance;
     msg_t* message;
     unsigned int static frameCounter;
-    static unsigned char crc_table_sender[POSSIBLE_VALUES_OF_A_BYTE];
-    static unsigned char crc_table_receiver[POSSIBLE_VALUES_OF_A_BYTE];
-    unsigned char crc_sender;
-    unsigned char crc_receiver;
-    Message(char operationMode);
+    static unsigned char crc_table[POSSIBLE_VALUES_OF_A_BYTE];
+    Message();
 public:
-    static Message* instanceOf(char operationMode);
+    static Message* instanceOf();
     //construct message
     msg_t* deserializeMessage(const char type, const char* data);
+    msg_t* deserializeMessage(const char type, const char* data, const int tam);
     //desconstruct message
     int serializeMessage(char* frame, char* type, char* data);
     msg_t* getMessage();
@@ -81,19 +79,21 @@ public:
     char* getData();
     char getType();
     char getFrame();
+    int getSize();
     char getMessageSize();
     int dataAtoi();
 private:
     bool isValidType();
     bool isValidType(const char type);
     bool isValidCrc();
-    bool isOppositeCrc(msg_t* msg);
-    char buildCrcSender(int size);
-    char buildCrcSender(int size, msg_t* msg);
-    char buildCrcReceiver(int size);
-    void makeCrcTables();
+    bool isValidCrc(msg_t* msg);
+    char buildCrc(int size);
+    char buildCrc(int size, msg_t* msg);
+    void makeCrcTable();
 };
 
+int datalen(const char* data);
+void datancpy(char* dest, const char* src, int n);
 int msglen(msg_t* msg);
 msg_t* msgdup(msg_t* msg);
 msg_t* msgcpy(msg_t* dest, msg_t* src);

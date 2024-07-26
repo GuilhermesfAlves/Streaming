@@ -6,11 +6,10 @@
 class Streaming{
 protected:
     int action = T_INEXISTENT;
-    int fileCount;
 public:
     StopNWait single;
     SlidingWindow window;
-    Streaming(string log_name, char operationMode);
+    Streaming(string log_name);
     virtual ~Streaming() = default;
 
     void toConnect(char* connection);

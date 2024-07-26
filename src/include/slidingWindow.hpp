@@ -12,20 +12,18 @@ class SlidingWindow: public FluxControl{
 private:
     list<msg_t*> window;
     list<msg_t*> queue;
-    list<msg_t*> data;
-    void sendWindow();
+    ofstream fileToBuild;
+    unsigned int dataReceived = 0;
+    int sendWindow();
     void refillWindow();
 public: 
-    SlidingWindow(string socketType, char operationMode);
+    SlidingWindow(string socketType);
     int empty();
     void add(char type, const char* msg);
-    void add(char type, ifstream* file);
-    int receive(int timeout);
+    void add(ifstream* file);
+    void receive(int timeout, int size);
     int send(int timeout);
-    int dataSize();
-    void flushData();
-    void printData();
-    int buildDataFile(char* fileName);
+    int tryBuildDataFile(const char* fileName, unsigned int size);
 };
 
 #endif

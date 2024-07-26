@@ -4,10 +4,11 @@ char FluxControl::lastReceivedFrame = MAX_FRAME;
 Message* FluxControl::message = NULL;
 Socket* FluxControl::socket = NULL;
 list<msg_t*> FluxControl::collected;
+list<msg_t*> FluxControl::sent;
 
-FluxControl::FluxControl(string socketType, char operationMode){
+FluxControl::FluxControl(string socketType){
     socket = Socket::instanceOf(socketType);
-    message = Message::instanceOf(operationMode);
+    message = Message::instanceOf();
     lastReceivedFrame = MAX_FRAME;
 }
 
@@ -39,9 +40,12 @@ int FluxControl::respond(unsigned char frameToConfirm, char type){
     char buffer[BUFFER_SIZE] = {0};
     if (frameToConfirm == INEXISTENT_FRAME)
         return 0;
+    if (type == T_NACK)
+        frameToConfirm = (frameToConfirm + 1) & MAX_FRAME;
 
     sprintf(buffer, "%d", frameToConfirm);
     socket -> post(message -> deserializeMessage(type, buffer), (size_t) message -> getMessageSize());    
+    addSentHistoric(message -> getMessage());
     return 1;
 }
 
@@ -62,14 +66,14 @@ int FluxControl::listen(int timeout){
 
     start = timestamp();
     do {
-        status = message -> setMessage(alreadyCollected(socket -> collect(buffer)));
+        status = alreadySent(message -> setMessage(alreadyCollected(socket -> collect(buffer))));
     } while ((status == NOT_A_MESSAGE) && ((time == INFINIT_TIMEOUT) || (timestamp() - start <= time)));
-
     return status;
 }
 
 int FluxControl::marshallACK(int status){
     msg_t* msg;
+
     switch (status){
     case VALID_MESSAGE:
         msg = message -> getMessage();
@@ -84,17 +88,41 @@ int FluxControl::marshallACK(int status){
 }
 
 char* FluxControl::alreadyCollected(char* buffer){
-    int exit;
-    for (msg_t* m : collected){
-        if (!(exit = msgncmp(m,(msg_t*) buffer, msglen(m) - 1))){
+    for (msg_t* msg : collected)
+        if (!msgncmp(msg, (msg_t*) buffer, msglen(msg) - 1)){
             memset(buffer, 0, BUFFER_SIZE);
             break;
         }
-    }
     return buffer;
 }
 
+int FluxControl::alreadySent(int status){
+    msg_t* toCompare =  message -> getMessage();
+    if (status != VALID_MESSAGE)
+        return status;
+    
+    for (msg_t* msg : sent)
+        if (!msgncmp(msg, toCompare, msglen(msg) - 1))
+            return NOT_A_MESSAGE;
+            
+    return VALID_MESSAGE;
+}
+
+void FluxControl::addSentHistoric(msg_t* msg){
+    for (msg_t* msg : sent)
+        if (!msgncmp(msg, message -> getMessage(), msglen(msg) - 1))
+            return;
+
+    if (sent.size() >= COLLECTED_HISTORIC_SIZE)
+        sent.pop_back();
+    sent.push_front(msg);
+}
+
 void FluxControl::addCollectHistoric(msg_t* msg){
+    for (msg_t* msg : sent)
+        if (!msgncmp(msg, message -> getMessage(), msglen(msg) - 1))
+            return;
+
     if (collected.size() >= COLLECTED_HISTORIC_SIZE)
         collected.pop_back();
     collected.push_front(msg);
