@@ -23,7 +23,7 @@ public:
     void add(ifstream* file);
     void receive(int timeout, unsigned int size);
     int send(int timeout);
-    int tryBuildDataFile(const char* fileName, unsigned int size);
+    int tryBuildDataFile(const char* path, string fileName, unsigned int size);
 };
 
 #endif

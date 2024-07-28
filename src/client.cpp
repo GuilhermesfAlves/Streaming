@@ -1,4 +1,5 @@
 #include "include/client.hpp"
+#include <limits>
 
 Client::Client() : Streaming(CLIENT_SOCKET_STR){}
 
@@ -26,28 +27,31 @@ int Client::run(){
             //  recebe os dados do arquivo T_DATA
             //  enquanto isso pode permitir ao usuario cancelar o download
             //  TODO recebe a request de abrir um player
-            cout << "sending download"<< endl;
-            single.send(T_DOWNLOAD, videoToDownload);
+            single.send(T_DOWNLOAD, videoToDownload.c_str());
             //possibilidade de receber uma mensagem de ERROR_FILE_NOT_FOUND
-            cout << "waiting for size" << endl;
             if (single.receive(SHORTEST_TIMEOUT) == T_ERROR){
                 cout << "Invalid file, try again" << endl;
                 action = T_LIST;
                 break;
             } 
             fileSize = single.getDataNumber();
-            path = CLIENT_CATHALOG_FOLDER;
-            path.append(videoToDownload);
-            free(videoToDownload);
             {
                 int fileStatus;
                 string command;
-                if ((fileStatus = window.tryBuildDataFile(path.c_str(), fileSize)) != FILE_OPEN_SUCCESS)
+                if ((fileStatus = window.tryBuildDataFile(CLIENT_CATHALOG_FOLDER, videoToDownload, fileSize)) != FILE_OPEN_SUCCESS){
                     single.send(T_ERROR, fileStatus);
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                    if (fileStatus == FILE_OPEN_FAIL)
+                        cout << "Can't open file, try again later" << endl;
+                    else 
+                        cout << "Not enough space in disk" << endl;
+                    cout << "Press enter to continue" << endl;
+                    cin.get();
+                }
                 else {
                     window.receive(SHORTEST_TIMEOUT, fileSize);
 
-                    command = "./vlc-wrapper.sh " + path;
+                    command = "./vlc-wrapper.sh " + (string)CLIENT_CATHALOG_FOLDER + videoToDownload;
                     system(command.c_str());
                 }
             }

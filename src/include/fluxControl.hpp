@@ -36,8 +36,8 @@ protected:
     static char lastReceivedFrame;
     int marshallACK(int status);
     long long timestamp();
-    void addCollectHistoric(msg_t* msg);
-    void addSentHistoric(msg_t* msg);
+    void addCollectHistoric(msg_t* newMsg);
+    void addSentHistoric(msg_t* newMsg);
     char* inContext(char* buffer);
     int listen(int timeout);
 public: 

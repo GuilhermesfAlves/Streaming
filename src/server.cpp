@@ -33,6 +33,8 @@ int Server::run(){
                 break;
             }
             single.send(T_FILE_DESCRIPTOR, file -> tellg());
+            if (single.receive(OPTIONAL_TIMEOUT) == T_ERROR)
+                break;
             file -> seekg(0, ios::beg);
             window.add(file);
             window.send(LONG_TIMEOUT);

@@ -25,14 +25,14 @@ int StopNWait::receive(int timeout){
     return marshallACK(status);
 }
 
-void StopNWait::send(unsigned char type, char* msg){
+void StopNWait::send(unsigned char type, const char* msg){
     msg_t* toSend = message -> buildMessage(type, msg);
     int status;
     int i = 0;
     addSentHistoric(toSend);
     do {
         socket -> post(toSend, msglen(toSend));
-    } while((((status = listen(SHORT_TIMEOUT << i)) == NOT_A_MESSAGE) || !confirmAck(toSend -> frame)) && (i++ < TIMEOUT_TOLERATION));
+    } while((((status = listen(SHORT_TIMEOUT << i)) == NOT_A_MESSAGE) || !confirmAck(toSend -> frame)) && (++i < TIMEOUT_TOLERATION));
 
     if (i >= TIMEOUT_TOLERATION)
         throw TimeoutException(SHORT_TIMEOUT);

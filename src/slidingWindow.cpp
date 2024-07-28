@@ -1,6 +1,8 @@
 #include "include/slidingWindow.hpp"
 #include <sys/time.h>
 #include <iomanip>
+#include <sys/stat.h> // Para mkdir e stat
+#include <sys/types.h> // Para mkdir
 
 SlidingWindow::SlidingWindow(string socketType) : FluxControl(socketType) {} 
 
@@ -128,12 +130,21 @@ int SlidingWindow::send(int timeout){
     return 0;
 }
 
-int SlidingWindow::tryBuildDataFile(const char* fileName, unsigned int size){
-    fileToBuild.open(fileName);
+int SlidingWindow::tryBuildDataFile(const char* path, string fileName, unsigned int size){
+    struct stat info;
+    
+    fileToBuild.open(path + fileName);
 
-    if (!fileToBuild.is_open())
+    if (!fileToBuild.is_open()){
+        if (stat(path, &info) != 0){ 
+            if (mkdir(path, 0755) != 0)
+                return FILE_OPEN_FAIL;
+            fileToBuild.open(path + fileName);
+            if (!fileToBuild.is_open())
+                return FILE_OPEN_FAIL;
+        }
         return FILE_OPEN_FAIL;
-
+    }
     fileToBuild.seekp(size - 1);
     fileToBuild.write("", 1);
 
@@ -142,6 +153,6 @@ int SlidingWindow::tryBuildDataFile(const char* fileName, unsigned int size){
     if (!fileToBuild)
         return FILE_FULL_DISK;
     
-    fileToBuild.open(fileName, ios::out | ios::binary);
+    fileToBuild.open(path + fileName, ios::out | ios::binary);
     return FILE_OPEN_SUCCESS;
 }

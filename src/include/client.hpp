@@ -8,7 +8,7 @@
 class Client: public Streaming{
 private:
     int fileSize;
-    char* videoToDownload;
+    string videoToDownload = "";
     void getUserAction();
     void menuAction();
     void cathalogAction();

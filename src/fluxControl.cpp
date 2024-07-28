@@ -97,24 +97,24 @@ char* FluxControl::inContext(char* buffer){
     return buffer;
 }
 
-void FluxControl::addSentHistoric(msg_t* msg){
+void FluxControl::addSentHistoric(msg_t* newMsg){
     for (msg_t* msg : sent)
-        if (!msgncmp(msg, message -> getMessage(), msglen(msg) - 1))
+        if (!msgncmp(msg, newMsg, msglen(msg) - 1))
             return;
 
     if (sent.size() >= COLLECTED_HISTORIC_SIZE)
         sent.pop_back();
-    sent.push_front(msg);
+    sent.push_front(newMsg);
 }
 
-void FluxControl::addCollectHistoric(msg_t* msg){
+void FluxControl::addCollectHistoric(msg_t* newMsg){
     for (msg_t* msg : collected)
-        if (!msgncmp(msg, message -> getMessage(), msglen(msg) - 1))
+        if (!msgncmp(msg, newMsg, msglen(msg) - 1))
             return;
 
     if (collected.size() >= COLLECTED_HISTORIC_SIZE)
         collected.pop_back();
-    collected.push_front(msg);
+    collected.push_front(newMsg);
 }
 
 void FluxControl::flushHistoric(){

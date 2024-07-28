@@ -13,7 +13,7 @@ public:
     //Espera por uma única mensagem, que caso valida, envia ACK
     int receive(int timeout);
     //Envia mensagem, retorna 1 se o ack for confirmado, 0 caso contrario
-    void send(unsigned char type, char* msg);
+    void send(unsigned char type, const char* msg);
     //Envia mensagem, retorna 1 se o ack for confirmado, 0 caso contrario, msg to string
     void send(unsigned char type, int msg);
     //Envia mensagem, retorna 1 se o ack for confirmado, 0 caso contrario, msg = NULL
