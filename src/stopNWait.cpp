@@ -13,8 +13,9 @@ int StopNWait::receive(int timeout){
     
     unsigned char currentFrame = message -> getFrame();
     unsigned char expectedFrame = (lastReceivedFrame + 1) & MAX_FRAME;
-    if (expectedFrame != currentFrame)
+    if (expectedFrame != currentFrame){
         status = INVALID_MESSAGE;
+    }
     
     if (status == VALID_MESSAGE){
         addCollectHistoric(message -> getMessage());
@@ -25,15 +26,15 @@ int StopNWait::receive(int timeout){
 }
 
 void StopNWait::send(unsigned char type, char* msg){
-    msg_t* toSend = message -> deserializeMessage(type, msg);
+    msg_t* toSend = message -> buildMessage(type, msg);
     int status;
     int i = 0;
     addSentHistoric(toSend);
     do {
         socket -> post(toSend, msglen(toSend));
-    } while(((status = listen(SHORT_TIMEOUT << i)) == NOT_A_MESSAGE) && !confirmAck(toSend -> frame) && (++i < TIMEOUT_TOLERATION));
+    } while((((status = listen(SHORT_TIMEOUT << i)) == NOT_A_MESSAGE) || !confirmAck(toSend -> frame)) && (i++ < TIMEOUT_TOLERATION));
 
-    if (status == NOT_A_MESSAGE)
+    if (i >= TIMEOUT_TOLERATION)
         throw TimeoutException(SHORT_TIMEOUT);
 
     addCollectHistoric(message -> getMessage());

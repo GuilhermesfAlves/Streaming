@@ -38,14 +38,14 @@ protected:
     long long timestamp();
     void addCollectHistoric(msg_t* msg);
     void addSentHistoric(msg_t* msg);
-    char* alreadyCollected(char* buffer);
-    int alreadySent(int status);
+    char* inContext(char* buffer);
     int listen(int timeout);
 public: 
     FluxControl(string socketType);
     static void connect(int ifindex);
     int confirmAck(unsigned char frameToConfirm);
     int confirmAck();
+    void flushHistoric();
     int respond(unsigned char frameToConfirm, char type);
 };
 

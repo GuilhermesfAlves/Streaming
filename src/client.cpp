@@ -18,7 +18,6 @@ int Client::run(){
             // while (window.dataSize() != fileCount){
             cout << "In cathalog:" << endl;
             window.receive(SHORTEST_TIMEOUT, 1);
-            // }
             break;
         case T_DOWNLOAD:
             // função para escolha de arquivo para baixar
@@ -27,8 +26,10 @@ int Client::run(){
             //  recebe os dados do arquivo T_DATA
             //  enquanto isso pode permitir ao usuario cancelar o download
             //  TODO recebe a request de abrir um player
+            cout << "sending download"<< endl;
             single.send(T_DOWNLOAD, videoToDownload);
             //possibilidade de receber uma mensagem de ERROR_FILE_NOT_FOUND
+            cout << "waiting for size" << endl;
             if (single.receive(SHORTEST_TIMEOUT) == T_ERROR){
                 cout << "Invalid file, try again" << endl;
                 action = T_LIST;
@@ -45,6 +46,7 @@ int Client::run(){
                     single.send(T_ERROR, fileStatus);
                 else {
                     window.receive(SHORTEST_TIMEOUT, fileSize);
+
                     command = "./vlc-wrapper.sh " + path;
                     system(command.c_str());
                 }
@@ -61,6 +63,8 @@ int Client::run(){
 
 void Client::getUserAction(){
 
+    window.flushHistoric();
+
     if (action == T_INEXISTENT){
         menuAction();
     } else if (action == T_LIST){
@@ -70,6 +74,7 @@ void Client::getUserAction(){
 
 void Client::menuAction(){
     char entry;
+    system("clear");
     cout << "Hello user!" << endl;
     while (1){
         cout << "To list the cathalog, type <L> or <l>" << endl;

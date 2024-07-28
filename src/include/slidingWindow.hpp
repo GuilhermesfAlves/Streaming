@@ -21,7 +21,7 @@ public:
     int empty();
     void add(char type, const char* msg);
     void add(ifstream* file);
-    void receive(int timeout, int size);
+    void receive(int timeout, unsigned int size);
     int send(int timeout);
     int tryBuildDataFile(const char* fileName, unsigned int size);
 };

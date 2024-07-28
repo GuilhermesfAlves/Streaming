@@ -12,7 +12,7 @@ Streaming* streamingFactory(char* mode){
 }
 
 int main(int argc, char* argv[]) {
-    string executeTemplate = "Use: ./exec [<client> | <server>] [your web interface: try running ifconfig to see which are avaiable]"; 
+    string executeTemplate = "Use: sudo ./exec [<client> | <server>] [your web interface: try running ifconfig to see which are avaiable]"; 
     
     // Verifica se há exatamente 3 argumentos
     if (argc != 3) {

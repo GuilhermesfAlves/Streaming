@@ -24,7 +24,7 @@ int SlidingWindow::sendWindow(){
 }
 
 void SlidingWindow::add(char type, const char* msg){
-    queue.push_back(message -> deserializeMessage(type, msg));
+    queue.push_back(message -> buildMessage(type, msg));
 }
 
 void SlidingWindow::add(ifstream* file) {
@@ -33,14 +33,14 @@ void SlidingWindow::add(ifstream* file) {
 
     memset(buffer, 0, BUFFER_SIZE);
     while ((tam = file -> readsome(buffer, MAX_DATA_SIZE)) || (file -> gcount() > 0)){
-        queue.push_back(message -> deserializeMessage(T_DATA, buffer, tam));
+        queue.push_back(message -> buildMessage(T_DATA, buffer, tam));
         memset(buffer, 0, BUFFER_SIZE);
         sum += tam;
     }
     add(T_END_TX, NULL);
 }
 
-void SlidingWindow::receive(int timeout, int size){
+void SlidingWindow::receive(int timeout, unsigned int size){
     int last_status = NOT_A_MESSAGE;
     int status, end = 0;
     int i;
@@ -72,15 +72,19 @@ void SlidingWindow::receive(int timeout, int size){
             int type = message -> getType();
             switch (type){
             case T_PRINT:
-                cout << message -> getData() << endl;
+                cout << "\t" << message -> getData() << endl;
                 break;
-            case T_DATA:        
+            case T_DATA:
                 fileToBuild.write(message -> getData(), message -> getSize());
                 dataReceived += message -> getSize();
-                cout << "\r\033[K" << ">>" << fixed << setprecision(2) << setw(6) << setfill('0') << (float) dataReceived / size * 100 << "%" << flush;
+                if (dataReceived == size)
+                    cout << "\r\033[K" << ">> " << fixed <<  "\x1B[32mCOMPLETE\x1B[0m" << flush;
+                else
+                    cout << "\r\033[K" << ">> " << fixed << setprecision(2) << setw(6) << setfill('0') << (float) dataReceived / size * 100 << "%" << flush;
                 break;
             case T_END_TX:
                 end = 1;
+                dataReceived = 0;
                 cout << endl;
                 fileToBuild.close();
                 break;
@@ -123,7 +127,6 @@ int SlidingWindow::send(int timeout){
     }
     return 0;
 }
-
 
 int SlidingWindow::tryBuildDataFile(const char* fileName, unsigned int size){
     fileToBuild.open(fileName);

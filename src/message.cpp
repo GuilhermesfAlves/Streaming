@@ -12,42 +12,42 @@ Message::Message(){
     message = NULL;
     makeCrcTable();
     frameCounter = 0;
+    srand(time(NULL));
 }
 
 Message* Message::instanceOf(){
     return (instance)? instance : (instance = new Message());
 }
 
-msg_t* Message::deserializeMessage(const char type, const char* data){
-    return deserializeMessage(type, data, datalen(data));
+msg_t* Message::buildMessage(const char type, const char* data){
+    return buildMessage(type, data, datalen(data));
 }
 
-msg_t* Message::deserializeMessage(const char type, const char* data, const int tam){
+void Message::durty(){
+    if (message -> size >= 14)
+        return;
+    for (int i = message -> size + 4; i < 14; i++)
+        message -> body[i] = (rand() % 26) + 97;
+}
+
+msg_t* Message::buildMessage(const char type, const char* data, const int tam){
     message = static_cast<msg_t*>(calloc(MAX_MESSAGE_SIZE, 1));
 
     if (!isValidType(type))
         return NULL;
+
     message -> head = HEAD_MARK;
     message -> frame = frameCounter++;
     message -> type = type;
     if (data == NULL){
         message -> size = 0;
-        message -> data[0] = buildCrc(message -> size + 3);
-        return message;
+    } else {
+        message -> size = tam;
+        datancpy(message -> data, data, message -> size);
     }
-    message -> size = tam;
-    datancpy(message -> data, data, message -> size);
-    message -> data[message -> size] = buildCrc(msglen(message) - 1);
-    
+    message -> data[message -> size] = buildCrc(message -> size + 3);
+    durty();    
     return message;
-}
-
-int Message::serializeMessage(char* frame, char* type, char* data){
-    *frame = message -> frame;
-    *type = message -> type;
-    strcpy(data, message -> data);
-
-    return 1;
 }
 
 int Message::getSize(){
@@ -91,7 +91,7 @@ bool Message::isValidCrc(){
 
 bool Message::isValidCrc(msg_t* msg){
     unsigned char expectedCrc = 0x00;
-    unsigned char currentCrc = buildCrc(msglen(msg), msg);
+    unsigned char currentCrc = buildCrc(msg -> size + 4, msg);
     return (expectedCrc == currentCrc);
 }
 
@@ -154,7 +154,7 @@ int Message::setMessage(char* msg){
     message = msgdup((msg_t*)msg);
     if (isValidCrc() && isValidType()){
         //remove o crc da mensagem
-        message -> body[msglen((msg_t*)msg) - 1] = '\0';
+        message -> body[message -> size + 3] = '\0';
         return VALID_MESSAGE;
     }
     return INVALID_MESSAGE;
@@ -174,8 +174,9 @@ int Message::dataAtoi(){
         return INEXISTENT_FRAME;
 
     for (int i = 0; message -> data[i] != '\0'; i++)
-        if ((message -> data[i] < '0') || (message -> data[i] > '9'))
+        if ((message -> data[i] < '0') || (message -> data[i] > '9')){
             return INEXISTENT_FRAME;
+        }
     
     return atoi(message -> data);
 }
@@ -189,6 +190,10 @@ int datalen(const char* data){
 int msglen(msg_t* msg){
     if (!msg)
         return 0;
+
+    if (msg -> size + OVERHEAD < 14)
+        return 14;
+
     return msg -> size + OVERHEAD;
 }
 
@@ -213,13 +218,14 @@ msg_t* msgcpy(msg_t* dest, msg_t* src){
 }
 
 int msgncmp(msg_t* m1, msg_t* m2, int n){
-    if ((msglen(m1) < n) || (msglen(m2) < n))
+    if ((msglen(m1) < n) || (msglen(m2) < n)){
         return 1;
+    }
 
     for (int i = 0; i < n; i++)
-        if (m1 -> body[i] != m2 -> body[i])
+        if ((m1 -> size + 3 != i) && (m1 -> body[i] != m2 -> body[i])){
             return 1;
-    
+        }
     return 0;
 }
 

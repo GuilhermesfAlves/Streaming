@@ -5,8 +5,8 @@ Server::Server() : Streaming(SERVER_SOCKET_STR){}
 
 int Server::run(){
 
-    char* path;
-    char* fileName;
+    string path;
+    system("clear");
     do {
         action = single.receive(INFINIT_TIMEOUT);
         switch (action){
@@ -26,10 +26,8 @@ int Server::run(){
             
             //caso no meio da transmissão dos dados o cliente resolva parar de receber ou
             //envie o erro de T_ERROR 3, de disco cheio, deve-se parar a transmissão
-            fileName = single.getDataStr();
-            path = new char[strlen(SERVER_CATHALOG_FOLDER) + strlen(fileName)];
-            strcpy(path, SERVER_CATHALOG_FOLDER);
-            strcat(path, fileName);
+            path = "";
+            path.append(SERVER_CATHALOG_FOLDER).append(single.getDataStr());
             if (!(file = new ifstream(path, ios::binary | ios::ate | ios::in)) || (!file -> is_open())){
                 single.send(T_ERROR, ERROR_FILE_NOT_FOUND);
                 break;

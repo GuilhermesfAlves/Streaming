@@ -65,13 +65,12 @@ private:
     unsigned int static frameCounter;
     static unsigned char crc_table[POSSIBLE_VALUES_OF_A_BYTE];
     Message();
+    void durty();
 public:
     static Message* instanceOf();
     //construct message
-    msg_t* deserializeMessage(const char type, const char* data);
-    msg_t* deserializeMessage(const char type, const char* data, const int tam);
-    //desconstruct message
-    int serializeMessage(char* frame, char* type, char* data);
+    msg_t* buildMessage(const char type, const char* data);
+    msg_t* buildMessage(const char type, const char* data, const int tam);
     msg_t* getMessage();
     char* getBody();
     int setMessage(char* msg);
