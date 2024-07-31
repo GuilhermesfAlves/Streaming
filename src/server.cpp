@@ -14,10 +14,8 @@ int Server::run(){
             //ao receber o pedido de listagem de arquivos,
             //retorna a listagem com N aquivos do tipo T_LIST de novo
             //e manda em janela os nomes dos N arquivos do tipo T_FILE_DESCRIPTOR 
-            // getFilesInCathalogCount();
-            // single.send(T_LIST, fileCount);
-            getFilesInCathalogToWindow();
-            window.send(LONG_TIMEOUT);
+            sendFilesInCathalog();
+
             break;
         case T_DOWNLOAD:
             //confere se o arquivo referenciado na mensagem existe,
@@ -50,13 +48,13 @@ int Server::run(){
     return 0;
 }
 
-void Server::getFilesInCathalogToWindow(){
+void Server::sendFilesInCathalog(){
     try {
         for (const auto& entry : filesystem::directory_iterator(SERVER_CATHALOG_FOLDER)) 
             if (entry.is_regular_file()) 
-                window.add(T_PRINT, entry.path().filename().string().c_str());
+                single.send(T_PRINT, entry.path().filename().string().c_str());
 
-        window.add(T_END_TX, NULL);
+        single.send(T_END_TX);
     } catch (const filesystem::filesystem_error& e) {
         cerr << "Erro: " << e.what() << endl;
     }

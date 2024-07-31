@@ -20,6 +20,8 @@ int StopNWait::receive(int timeout){
     if (status == VALID_MESSAGE){
         addCollectHistoric(message -> getMessage());
         lastReceivedFrame = currentFrame;
+        if (message -> getType() == T_PRINT)
+            cout << "\t" << message -> getData() << endl;
     }
 
     return marshallACK(status);

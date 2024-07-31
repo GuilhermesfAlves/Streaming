@@ -14,11 +14,8 @@ int Client::run(){
             // print na tela quais as opções T_LIST
             
             single.send(T_LIST);
-            // single.receive(SHORT_TIMEOUT);
-            // fileCount = single.getDataNumber();
-            // while (window.dataSize() != fileCount){
             cout << "In cathalog:" << endl;
-            window.receive(SHORTEST_TIMEOUT, 1);
+            while (single.receive(SHORT_TIMEOUT) != T_END_TX);
             break;
         case T_DOWNLOAD:
             // função para escolha de arquivo para baixar
@@ -73,7 +70,7 @@ void Client::getUserAction(){
         menuAction();
     } else if (action == T_LIST){
         cathalogAction();
-    } else ; //MUDAR
+    } 
 }
 
 void Client::menuAction(){

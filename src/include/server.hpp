@@ -8,8 +8,7 @@
 class Server: public Streaming{
 private:
     ifstream* file;
-    void getFilesInCathalogCount();
-    void getFilesInCathalogToWindow();
+    void sendFilesInCathalog();
 public:
     Server();
 
