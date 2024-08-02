@@ -14,7 +14,7 @@
 #define DEFAULT_TIMEOUT 3 // TIMEOUT MILLIS * 8
 #define LONG_TIMEOUT 4 // TIMEOUT MILLIS * 16
 
-#define TIMEOUT_MILLIS 10
+#define TIMEOUT_MILLIS 1
 
 #define TIMEOUT_TOLERATION 3 // Duplicate timeout 3 times, duplicate per iteration
 
@@ -31,15 +31,21 @@ private:
 protected:
     static Message* message;
     static Socket* socket;
+#ifdef LO
     static list<msg_t*> collected;
     static list<msg_t*> sent;
-    static char lastReceivedFrame;
+#else
+    static msg_t* lastReceivedMessage;
+#endif
+    static unsigned char lastReceivedFrame;
     int marshallACK(int status);
     long long timestamp();
     void addCollectHistoric(msg_t* newMsg);
     void addSentHistoric(msg_t* newMsg);
     char* inContext(char* buffer);
     int listen(int timeout);
+    void updateLastReceived(msg_t * msg);
+    bool isExpectedFrame();
 public: 
     FluxControl(string socketType);
     static void connect(int ifindex);

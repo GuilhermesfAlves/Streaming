@@ -5,8 +5,8 @@ Server::Server() : Streaming(SERVER_SOCKET_STR){}
 
 int Server::run(){
 
-    string path;
     system("clear");
+    string path;
     do {
         action = single.receive(INFINIT_TIMEOUT);
         switch (action){

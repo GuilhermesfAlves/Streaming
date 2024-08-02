@@ -1,10 +1,15 @@
 #include "include/fluxControl.hpp"
 
-char FluxControl::lastReceivedFrame = MAX_FRAME;
+unsigned char FluxControl::lastReceivedFrame = MAX_FRAME;
 Message* FluxControl::message = NULL;
 Socket* FluxControl::socket = NULL;
+
+#ifdef LO
 list<msg_t*> FluxControl::collected;
 list<msg_t*> FluxControl::sent;
+#else
+msg_t* FluxControl::lastReceivedMessage = NULL;
+#endif
 
 FluxControl::FluxControl(string socketType){
     socket = Socket::instanceOf(socketType);
@@ -29,7 +34,7 @@ int FluxControl::confirmAck(unsigned char frameToConfirm){
 }
 
 int FluxControl::confirmAck(){
-    return ((message -> getType() == T_ACK) && (message -> dataAtoi() != INEXISTENT_FRAME));
+    return (((message -> getType() == T_ACK) || (message -> getType() == T_NACK)) && (message -> dataAtoi() != INEXISTENT_FRAME));
 }
 
 int FluxControl::respond(unsigned char frameToConfirm, char type){
@@ -84,6 +89,7 @@ int FluxControl::marshallACK(int status){
 }
 
 char* FluxControl::inContext(char* buffer){
+#ifdef LO
     for (msg_t* msg : collected)
         if (!msgncmp(msg, (msg_t*) buffer, msglen(msg) - 1)){
             memset(buffer, 0, BUFFER_SIZE);
@@ -94,10 +100,15 @@ char* FluxControl::inContext(char* buffer){
             memset(buffer, 0, BUFFER_SIZE);
             break;
         }
+#else
+    if (!msgncmp(lastReceivedMessage, (msg_t*)buffer, msglen(lastReceivedMessage) - 1))
+        memset(buffer, 0, BUFFER_SIZE);    
+#endif
     return buffer;
 }
 
 void FluxControl::addSentHistoric(msg_t* newMsg){
+#ifdef LO
     for (msg_t* msg : sent)
         if (!msgncmp(msg, newMsg, msglen(msg) - 1))
             return;
@@ -105,9 +116,11 @@ void FluxControl::addSentHistoric(msg_t* newMsg){
     if (sent.size() >= COLLECTED_HISTORIC_SIZE)
         sent.pop_back();
     sent.push_front(newMsg);
+#endif
 }
 
 void FluxControl::addCollectHistoric(msg_t* newMsg){
+#ifdef LO
     for (msg_t* msg : collected)
         if (!msgncmp(msg, newMsg, msglen(msg) - 1))
             return;
@@ -115,11 +128,25 @@ void FluxControl::addCollectHistoric(msg_t* newMsg){
     if (collected.size() >= COLLECTED_HISTORIC_SIZE)
         collected.pop_back();
     collected.push_front(newMsg);
+#else
+    lastReceivedMessage = newMsg;
+#endif
 }
 
 void FluxControl::flushHistoric(){
+#ifdef LO
     collected.clear();
     sent.clear();
+#endif
+}
+
+void FluxControl::updateLastReceived(msg_t * msg){
+    addCollectHistoric(msg);
+    lastReceivedFrame = msg -> frame;
+}
+
+bool FluxControl::isExpectedFrame(){
+    return (message -> getFrame() == ((lastReceivedFrame + 1) & MAX_FRAME));
 }
 
 TimeoutException::TimeoutException(int timeout) : timeout(timeout) {}

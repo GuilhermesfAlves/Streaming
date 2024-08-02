@@ -46,22 +46,18 @@ void SlidingWindow::receive(int timeout, unsigned int size){
     int last_status = NOT_A_MESSAGE;
     int status, end = 0;
     int i;
-    unsigned char currentFrame;
-    unsigned char expectedFrame;
     msg_t* msg = message -> getMessage();
 
     while (!end){
         for (int count = 0, j = 0; j < TIMEOUT_TOLERATION && count < WINDOW_SIZE && !end;){
             j++;
             i = 0;
-            while (((status = listen(timeout + i)) == NOT_A_MESSAGE) && (i++ < j));
+            while (((status = listen(timeout << i)) == NOT_A_MESSAGE) && (i++ < j));
 
             if (status == NOT_A_MESSAGE)
                 continue;
             j = 0;
-            currentFrame = message -> getFrame();
-            expectedFrame = (lastReceivedFrame + 1) & MAX_FRAME;
-            if (expectedFrame != currentFrame){
+            if (!isExpectedFrame()){
                 status = INVALID_MESSAGE;
             }
             if (status == INVALID_MESSAGE){
@@ -94,8 +90,7 @@ void SlidingWindow::receive(int timeout, unsigned int size){
                 break;
             }
             count++;
-            addCollectHistoric(msg);
-            lastReceivedFrame = currentFrame;
+            updateLastReceived(msg);
             last_status = status;
         }
         message -> setMessage(msg);
@@ -107,24 +102,32 @@ int SlidingWindow::send(int timeout){
     int status;
     int i;
     int frame;
-
+    int clear;
     while (!empty()){
         i = 0;
         do {
             refillWindow();
             sendWindow();
-        } while (((status = listen(timeout + i)) == NOT_A_MESSAGE) && !confirmAck() && (i++ < TIMEOUT_TOLERATION));
+        } while (((status = listen(timeout << i)) == NOT_A_MESSAGE) && !confirmAck() && (i++ < TIMEOUT_TOLERATION));
 
         if (status == NOT_A_MESSAGE)
             throw TimeoutException(timeout);
 
-        addCollectHistoric(message -> getMessage());
-        lastReceivedFrame = message -> getFrame();
-        while ((!window.empty()) && (frame != (window.front() -> frame)) && (window.size() > 1))
-            window.pop_front();
-        
-        if (confirmAck(window.front() -> frame)){
-            window.pop_front();
+        updateLastReceived(message -> getMessage());
+        frame = message -> dataAtoi();
+        clear = 0;
+        for (auto rit = window.rbegin(); rit != window.rend();){
+            if ((!clear) && (*rit) -> frame == frame){
+                if (confirmAck((*rit) -> frame))
+                    window.remove(*rit);
+                else 
+                    ++rit;
+                clear = 1;
+            } else if (clear){
+                window.remove(*rit);
+            } else {
+                ++rit;
+            }
         }
     }
     return 0;

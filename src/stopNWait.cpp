@@ -10,16 +10,16 @@ int StopNWait::receive(int timeout){
 
     if ((status == NOT_A_MESSAGE) && (timeout < OPTIONAL_TIMEOUT))
         throw TimeoutException(timeout);
-    
-    unsigned char currentFrame = message -> getFrame();
-    unsigned char expectedFrame = (lastReceivedFrame + 1) & MAX_FRAME;
-    if (expectedFrame != currentFrame){
+
+    if ((status == NOT_A_MESSAGE) && (timeout >= OPTIONAL_TIMEOUT))
+        return 0;
+
+    if (!isExpectedFrame()){
         status = INVALID_MESSAGE;
     }
     
     if (status == VALID_MESSAGE){
-        addCollectHistoric(message -> getMessage());
-        lastReceivedFrame = currentFrame;
+        updateLastReceived(message -> getMessage());
         if (message -> getType() == T_PRINT)
             cout << "\t" << message -> getData() << endl;
     }
@@ -39,8 +39,7 @@ void StopNWait::send(unsigned char type, const char* msg){
     if (i >= TIMEOUT_TOLERATION)
         throw TimeoutException(SHORT_TIMEOUT);
 
-    addCollectHistoric(message -> getMessage());
-    lastReceivedFrame = message -> getFrame();
+    updateLastReceived(message -> getMessage());
 }
 
 void StopNWait::send(unsigned char type, int msg){
