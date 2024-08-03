@@ -54,7 +54,7 @@ public:
     int confirmAck(unsigned char frameToConfirm);
     int confirmAck();
     void flushHistoric();
-    int respond(unsigned char frameToConfirm, char type);
+    int respond(char type);
 };
 
 class TimeoutException: public exception{

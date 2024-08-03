@@ -36,6 +36,9 @@ msg_t* Message::buildMessage(const char type, const char* data, const int tam){
     if (!isValidType(type))
         return NULL;
 
+    if ((tam >= 10) && ((((unsigned int)data[9] & 255) == 0x81) || (((unsigned int)data[9] & 255) == 0x88)))
+        throw exception();
+    
     message -> head = HEAD_MARK;
     message -> frame = frameCounter++;
     message -> type = type;
@@ -92,6 +95,9 @@ bool Message::isValidCrc(){
 bool Message::isValidCrc(msg_t* msg){
     unsigned char expectedCrc = 0x00;
     unsigned char currentCrc = buildCrc(msg -> size + 4, msg);
+    if (expectedCrc != currentCrc){
+        cout << "not expected crc " << msgToString(msg) << endl;
+    }
     return (expectedCrc == currentCrc);
 }
 
@@ -101,7 +107,9 @@ char Message::buildCrc(int size, msg_t* msg){
     // i = 1, pois o crc não deve validar o HEAD
     for (int i = 1; i < size; i++){
         crc = crc_table[crc ^ (unsigned char)msg -> body[i]];
+        // cout << ((unsigned int)crc & 255) << endl;
     }
+    // cout << "," << endl;
     return crc;
 }
 
@@ -238,7 +246,7 @@ string msgToString(msg_t* m){
     string data = "";
 
     for (int i = 0; i < m -> size; i++)
-        data.append(to_string(m -> data[i]) + "." + (((i + 1) % 6 == 0)?"\n":""));
+        data.append(to_string((unsigned int)m -> data[i] & 255) + "." + (((i + 1) % 6 == 0)?"\n":""));
     
     return ("SIZE:" + to_string((unsigned int)m -> size)\
     + " FRAME:" + to_string((unsigned int)m -> frame)\

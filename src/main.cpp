@@ -28,6 +28,7 @@ int main(int argc, char* argv[]) {
     streaming -> toConnect(argv[2]);
     try{
         streaming -> run();
+        system("clear");
         return 0;
     } catch (const exception& e){
         cout << endl;

@@ -4,3 +4,4 @@ exec
 /obj
 *.pcap
 /cathalogC/*
+*.txt

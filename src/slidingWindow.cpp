@@ -35,11 +35,24 @@ void SlidingWindow::add(ifstream* file) {
 
     memset(buffer, 0, BUFFER_SIZE);
     while ((tam = file -> readsome(buffer, MAX_DATA_SIZE)) || (file -> gcount() > 0)){
-        queue.push_back(message -> buildMessage(T_DATA, buffer, tam));
-        memset(buffer, 0, BUFFER_SIZE);
-        sum += tam;
+        sum += resolver(T_DATA, buffer, tam);
     }
     add(T_END_TX, NULL);
+}
+
+int SlidingWindow::resolver(const unsigned char type, char* buffer, const int tam){
+    int sum = 0;
+    msg_t* m;
+    try{
+        m = message -> buildMessage(type, buffer, tam);
+        queue.push_back(m);
+        memset(buffer, 0, tam);
+        return tam;
+    } catch(exception& e){
+        sum += resolver(type, buffer, 9);
+        sum += resolver(type, buffer + 9, tam - 9);
+        return sum;
+    }
 }
 
 void SlidingWindow::receive(int timeout, unsigned int size){
@@ -61,7 +74,6 @@ void SlidingWindow::receive(int timeout, unsigned int size){
                 status = INVALID_MESSAGE;
             }
             if (status == INVALID_MESSAGE){
-                message -> setMessage(msg);
                 last_status = status;
                 break;
             }
@@ -94,7 +106,7 @@ void SlidingWindow::receive(int timeout, unsigned int size){
             last_status = status;
         }
         message -> setMessage(msg);
-        marshallACK(last_status);    
+        marshallACK(last_status); 
     }
 }
 
@@ -129,6 +141,7 @@ int SlidingWindow::send(int timeout){
                 clear = 1;
             } else if (clear){
                 window.remove(*rit);
+                nackList.clear();
             } else {
                 ++rit;
             }

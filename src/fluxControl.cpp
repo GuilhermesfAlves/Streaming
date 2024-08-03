@@ -33,18 +33,14 @@ int FluxControl::confirmAck(){
     return (((message -> getType() == T_ACK) || (message -> getType() == T_NACK)) && (message -> dataAtoi() != INEXISTENT_FRAME));
 }
 
-int FluxControl::respond(unsigned char frameToConfirm, char type){
+int FluxControl::respond(char type){
     char buffer[BUFFER_SIZE] = {0};
-
-    if (frameToConfirm == INEXISTENT_FRAME)
-        return 0;
+    int frameToConfirm;
 
     if (type == T_NACK){
-        nackList.push_front(message -> getMessage());
-        if (nackList.size() > NACK_TOLERATION)
-            throw BadConnectionException(message -> getMessage(), SENDING_NACK);
-        frameToConfirm = (frameToConfirm + 1) & MAX_FRAME;
+        frameToConfirm = (lastReceivedFrame + 1) & MAX_FRAME;
     } else {
+        frameToConfirm = lastReceivedFrame;
         nackList.clear();
     }
     sprintf(buffer, "%d", frameToConfirm);
@@ -72,6 +68,13 @@ int FluxControl::listen(int timeout){
     do {
         status = message -> setMessage(inContext(socket -> collect(buffer)));
     } while ((status == NOT_A_MESSAGE) && ((time == INFINIT_TIMEOUT) || (timestamp() - start <= time)));
+
+    if (status == INVALID_MESSAGE){
+        cout << "invalid frame in " << (unsigned int)message -> getFrame() << endl;
+        nackList.push_front(message -> getMessage());
+        if (nackList.size() > NACK_TOLERATION)
+            throw BadConnectionException(message -> getMessage(), SENDING_NACK);
+    }
     return status;
 }
 
@@ -81,11 +84,11 @@ int FluxControl::marshallACK(int status){
     switch (status){
     case VALID_MESSAGE:
         msg = message -> getMessage();
-        respond(message -> getFrame(), T_ACK);
+        respond(T_ACK);
         message -> setMessage(msg);
         return message -> getType();
     case INVALID_MESSAGE:
-        respond(message -> getFrame(), T_NACK);
+        respond(T_NACK);
     default:
         return NOT_A_MESSAGE;
     }
