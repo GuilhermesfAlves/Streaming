@@ -233,3 +233,15 @@ void datancpy(char* dest, const char* src, int n){
     for (int i = 0; i < n; i++)
         dest[i] = src[i];
 }
+
+string msgToString(msg_t* m){
+    string data = "";
+
+    for (int i = 0; i < m -> size; i++)
+        data.append(to_string(m -> data[i]) + "." + (((i + 1) % 6 == 0)?"\n":""));
+    
+    return ("SIZE:" + to_string((unsigned int)m -> size)\
+    + " FRAME:" + to_string((unsigned int)m -> frame)\
+    + " TYPE:" + to_string((unsigned int)m -> type)\
+    + "\nDATA:\n" + data);
+}

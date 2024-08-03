@@ -29,7 +29,8 @@ int main(int argc, char* argv[]) {
     try{
         streaming -> run();
         return 0;
-    } catch (TimeoutException& e){
+    } catch (const exception& e){
+        cout << endl;
         cout << e.what() << endl;
         cout << "Finishing Execution" << endl;
         return 1;

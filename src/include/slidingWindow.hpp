@@ -14,7 +14,7 @@ private:
     list<msg_t*> queue;
     ofstream fileToBuild;
     unsigned int dataReceived = 0;
-    int sendWindow();
+    msg_t* sendWindow();
     void refillWindow();
 public: 
     SlidingWindow(string socketType);

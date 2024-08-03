@@ -17,12 +17,12 @@ void SlidingWindow::refillWindow(){
     }
 }
 
-int SlidingWindow::sendWindow(){
+msg_t* SlidingWindow::sendWindow(){
     for (msg_t* msg: window){
         socket -> post(msg -> body, (size_t)msglen(msg));
         addSentHistoric(msg);
     }
-    return (int)(unsigned char) window.back() -> frame;
+    return window.front();
 }
 
 void SlidingWindow::add(char type, const char* msg){
@@ -107,7 +107,9 @@ int SlidingWindow::send(int timeout){
         i = 0;
         do {
             refillWindow();
-            sendWindow();
+            nackList.push_front(sendWindow());
+            if (nackList.size() >= NACK_TOLERATION)
+                throw BadConnectionException(nackList.front(), RECEIVING_NACK);
         } while (((status = listen(timeout << i)) == NOT_A_MESSAGE) && !confirmAck() && (i++ < TIMEOUT_TOLERATION));
 
         if (status == NOT_A_MESSAGE)
@@ -118,10 +120,12 @@ int SlidingWindow::send(int timeout){
         clear = 0;
         for (auto rit = window.rbegin(); rit != window.rend();){
             if ((!clear) && (*rit) -> frame == frame){
-                if (confirmAck((*rit) -> frame))
+                if (confirmAck((*rit) -> frame)){
                     window.remove(*rit);
-                else 
+                    nackList.clear();
+                } else { 
                     ++rit;
+                }
                 clear = 1;
             } else if (clear){
                 window.remove(*rit);

@@ -3,13 +3,9 @@
 unsigned char FluxControl::lastReceivedFrame = MAX_FRAME;
 Message* FluxControl::message = NULL;
 Socket* FluxControl::socket = NULL;
-
-#ifdef LO
 list<msg_t*> FluxControl::collected;
 list<msg_t*> FluxControl::sent;
-#else
-msg_t* FluxControl::lastReceivedMessage = NULL;
-#endif
+list<msg_t*> FluxControl::nackList;
 
 FluxControl::FluxControl(string socketType){
     socket = Socket::instanceOf(socketType);
@@ -39,11 +35,18 @@ int FluxControl::confirmAck(){
 
 int FluxControl::respond(unsigned char frameToConfirm, char type){
     char buffer[BUFFER_SIZE] = {0};
+
     if (frameToConfirm == INEXISTENT_FRAME)
         return 0;
-    if (type == T_NACK)
-        frameToConfirm = (frameToConfirm + 1) & MAX_FRAME;
 
+    if (type == T_NACK){
+        nackList.push_front(message -> getMessage());
+        if (nackList.size() > NACK_TOLERATION)
+            throw BadConnectionException(message -> getMessage(), SENDING_NACK);
+        frameToConfirm = (frameToConfirm + 1) & MAX_FRAME;
+    } else {
+        nackList.clear();
+    }
     sprintf(buffer, "%d", frameToConfirm);
     socket -> post(message -> buildMessage(type, buffer), (size_t) message -> getMessageSize());
     addSentHistoric(message -> getMessage());
@@ -89,7 +92,6 @@ int FluxControl::marshallACK(int status){
 }
 
 char* FluxControl::inContext(char* buffer){
-#ifdef LO
     for (msg_t* msg : collected)
         if (!msgncmp(msg, (msg_t*) buffer, msglen(msg) - 1)){
             memset(buffer, 0, BUFFER_SIZE);
@@ -100,15 +102,10 @@ char* FluxControl::inContext(char* buffer){
             memset(buffer, 0, BUFFER_SIZE);
             break;
         }
-#else
-    if (!msgncmp(lastReceivedMessage, (msg_t*)buffer, msglen(lastReceivedMessage) - 1))
-        memset(buffer, 0, BUFFER_SIZE);    
-#endif
     return buffer;
 }
 
 void FluxControl::addSentHistoric(msg_t* newMsg){
-#ifdef LO
     for (msg_t* msg : sent)
         if (!msgncmp(msg, newMsg, msglen(msg) - 1))
             return;
@@ -116,11 +113,9 @@ void FluxControl::addSentHistoric(msg_t* newMsg){
     if (sent.size() >= COLLECTED_HISTORIC_SIZE)
         sent.pop_back();
     sent.push_front(newMsg);
-#endif
 }
 
 void FluxControl::addCollectHistoric(msg_t* newMsg){
-#ifdef LO
     for (msg_t* msg : collected)
         if (!msgncmp(msg, newMsg, msglen(msg) - 1))
             return;
@@ -128,16 +123,11 @@ void FluxControl::addCollectHistoric(msg_t* newMsg){
     if (collected.size() >= COLLECTED_HISTORIC_SIZE)
         collected.pop_back();
     collected.push_front(newMsg);
-#else
-    lastReceivedMessage = newMsg;
-#endif
 }
 
 void FluxControl::flushHistoric(){
-#ifdef LO
     collected.clear();
     sent.clear();
-#endif
 }
 
 void FluxControl::updateLastReceived(msg_t * msg){
@@ -157,4 +147,11 @@ const char* TimeoutException::what() const noexcept{
         timeExploded += TIMEOUT_MILLIS << (timeout + i);
 
     return strdup((messageException + to_string(timeExploded) + "ms exploded").c_str());
+}
+
+BadConnectionException::BadConnectionException(msg_t* badMessage, bool isSending) : badMessage(badMessage), isSending(isSending){}
+
+const char* BadConnectionException::what() const noexcept{
+    return strdup((messageException + ((isSending)?"Can't send: ":"Malformed Message: ")\
+    + msgToString(badMessage)).c_str());
 }

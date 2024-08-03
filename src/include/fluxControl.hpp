@@ -18,6 +18,11 @@
 
 #define TIMEOUT_TOLERATION 3 // Duplicate timeout 3 times, duplicate per iteration
 
+#define NACK_TOLERATION 5
+
+#define SENDING_NACK 0
+#define RECEIVING_NACK 1
+
 #define FILE_OPEN_SUCCESS 0
 #define FILE_OPEN_FAIL 1
 #define FILE_NOT_FOUND 2
@@ -31,12 +36,9 @@ private:
 protected:
     static Message* message;
     static Socket* socket;
-#ifdef LO
     static list<msg_t*> collected;
     static list<msg_t*> sent;
-#else
-    static msg_t* lastReceivedMessage;
-#endif
+    static list<msg_t*> nackList;
     static unsigned char lastReceivedFrame;
     int marshallACK(int status);
     long long timestamp();
@@ -61,6 +63,16 @@ private:
     int timeout;
 public:
     explicit TimeoutException(int timeout);
+    virtual const char* what() const noexcept override;
+};
+
+class BadConnectionException: public exception{
+private:
+    string messageException = "Bad Connection Exception, ";
+    msg_t* badMessage = NULL;
+    bool isSending;
+public:
+    explicit BadConnectionException(msg_t* badMessage, bool isSending);
     virtual const char* what() const noexcept override;
 };
 

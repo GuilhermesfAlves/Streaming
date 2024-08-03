@@ -97,5 +97,6 @@ int msglen(msg_t* msg);
 msg_t* msgdup(msg_t* msg);
 msg_t* msgcpy(msg_t* dest, msg_t* src);
 int msgncmp(msg_t* m1, msg_t* m2, int n);
+string msgToString(msg_t* m);
 
 #endif 
