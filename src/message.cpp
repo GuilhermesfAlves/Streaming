@@ -31,13 +31,12 @@ void Message::durty(){
 }
 
 msg_t* Message::buildMessage(const char type, const char* data, const int tam){
-    message = static_cast<msg_t*>(calloc(MAX_MESSAGE_SIZE, 1));
-
+    if ((tam >= 10) && ((((unsigned int)data[9] & 255) == 0x81) || (((unsigned int)data[9] & 255) == 0x88)))
+        throw exception();
     if (!isValidType(type))
         return NULL;
 
-    if ((tam >= 10) && ((((unsigned int)data[9] & 255) == 0x81) || (((unsigned int)data[9] & 255) == 0x88)))
-        throw exception();
+    message = static_cast<msg_t*>(calloc(MAX_MESSAGE_SIZE, 1));
     
     message -> head = HEAD_MARK;
     message -> frame = frameCounter++;
@@ -49,7 +48,10 @@ msg_t* Message::buildMessage(const char type, const char* data, const int tam){
         datancpy(message -> data, data, message -> size);
     }
     message -> data[message -> size] = buildCrc(message -> size + 3);
-    durty();    
+    if ((tam >= 8) && ((((unsigned int)message -> data[9] & 255) == 0x81) || (((unsigned int)message -> data[9] & 255) == 0x88)))
+        throw exception();
+
+    durty();
     return message;
 }
 

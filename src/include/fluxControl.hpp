@@ -14,7 +14,7 @@
 #define DEFAULT_TIMEOUT 3 // TIMEOUT MILLIS * 8
 #define LONG_TIMEOUT 4 // TIMEOUT MILLIS * 16
 
-#define TIMEOUT_MILLIS 1
+#define TIMEOUT_MILLIS 10
 
 #define TIMEOUT_TOLERATION 3 // Duplicate timeout 3 times, duplicate per iteration
 

@@ -24,6 +24,8 @@ int Server::run(){
             
             //caso no meio da transmissão dos dados o cliente resolva parar de receber ou
             //envie o erro de T_ERROR 3, de disco cheio, deve-se parar a transmissão
+            if (!strcasecmp(single.getDataStr(), "quit"))
+                break;
             path = "";
             path.append(SERVER_CATHALOG_FOLDER).append(single.getDataStr());
             if (!(file = new ifstream(path, ios::binary | ios::ate | ios::in)) || (!file -> is_open())){

@@ -49,8 +49,8 @@ int SlidingWindow::resolver(const unsigned char type, char* buffer, const int ta
         memset(buffer, 0, tam);
         return tam;
     } catch(exception& e){
-        sum += resolver(type, buffer, 9);
-        sum += resolver(type, buffer + 9, tam - 9);
+        sum += resolver(type, buffer, 8);
+        sum += resolver(type, buffer + 8, tam - 8);
         return sum;
     }
 }
@@ -65,7 +65,7 @@ void SlidingWindow::receive(int timeout, unsigned int size){
         for (int count = 0, j = 0; j < TIMEOUT_TOLERATION && count < WINDOW_SIZE && !end;){
             j++;
             i = 0;
-            while (((status = listen(timeout << i)) == NOT_A_MESSAGE) && (i++ < j));
+            while (((status = listen(timeout + i)) == NOT_A_MESSAGE) && (i++ < j));
 
             if (status == NOT_A_MESSAGE)
                 continue;
@@ -122,7 +122,7 @@ int SlidingWindow::send(int timeout){
             nackList.push_front(sendWindow());
             if (nackList.size() >= NACK_TOLERATION)
                 throw BadConnectionException(nackList.front(), RECEIVING_NACK);
-        } while (((status = listen(timeout << i)) == NOT_A_MESSAGE) && !confirmAck() && (i++ < TIMEOUT_TOLERATION));
+        } while (((status = listen(timeout + i)) == NOT_A_MESSAGE) && !confirmAck() && (i++ < TIMEOUT_TOLERATION));
 
         if (status == NOT_A_MESSAGE)
             throw TimeoutException(timeout);

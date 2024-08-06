@@ -25,6 +25,10 @@ int Client::run(){
             //  enquanto isso pode permitir ao usuario cancelar o download
             //  TODO recebe a request de abrir um player
             single.send(T_DOWNLOAD, videoToDownload.c_str());
+            if (!strcasecmp(videoToDownload.c_str(), "quit")){
+                action = T_INEXISTENT;
+                break;
+            }
             //possibilidade de receber uma mensagem de ERROR_FILE_NOT_FOUND
             if (single.receive(SHORTEST_TIMEOUT) == T_ERROR){
                 cout << "Invalid file, try again" << endl;
@@ -99,7 +103,7 @@ void Client::menuAction(){
 
 void Client::cathalogAction(){
     char str[MAX_DATA_SIZE];
-    cout << "Select a video" << endl << ">";
+    cout << "Select a video or type 'quit' to go back" << endl << ">";
     cin >> str;
     videoToDownload = strdup(str);
     action = T_DOWNLOAD;
