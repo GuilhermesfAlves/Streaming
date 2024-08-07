@@ -150,9 +150,23 @@ int SlidingWindow::send(int timeout){
     return 0;
 }
 
-int SlidingWindow::tryBuildDataFile(const char* path, string fileName, unsigned int size){
+int SlidingWindow::tryBuildDataFile(const char* path, string fileName, unsigned int size, tm* time){
     struct stat info;
-    
+    time_t time_c = mktime(time);
+    auto time_s = chrono::system_clock::from_time_t(time_c);
+    filesystem::file_time_type ftime;
+    std::enable_if<true, std::chrono::time_point<std::chrono::_V2::system_clock, std::chrono::_V2::system_clock::duration>>::type fileTimePoint;
+
+    if (filesystem::exists(path + fileName)){
+        // Obter o tempo de última modificação do arquivo
+        ftime = filesystem::last_write_time(path + fileName);
+        // Converter o tempo do arquivo para chrono::system_clock::time_point
+        fileTimePoint = chrono::time_point_cast<chrono::system_clock::duration>(
+            ftime - filesystem::file_time_type::clock::now() + chrono::system_clock::now()
+        );
+        if (time_s != fileTimePoint)
+            throw exception();
+    }
     fileToBuild.open(path + fileName);
 
     if (!fileToBuild.is_open()){

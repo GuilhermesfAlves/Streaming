@@ -24,7 +24,7 @@ public:
     int resolver(const unsigned char type, char* buffer, const int tam);
     void receive(int timeout, unsigned int size);
     int send(int timeout);
-    int tryBuildDataFile(const char* path, string fileName, unsigned int size);
+    int tryBuildDataFile(const char* path, string fileName, unsigned int size, tm* time);
 };
 
 #endif

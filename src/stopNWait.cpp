@@ -52,8 +52,42 @@ void StopNWait::send(unsigned char type){
     send(type, (char*)NULL);
 }
 
-int StopNWait::getDataNumber(){
-    return message -> dataAtoi();
+void StopNWait::send(ifstream* file, string path){
+    char buffer[BUFFER_SIZE] = {0}; 
+    auto ftime = filesystem::last_write_time(path);
+    
+    // Converter para time_t para fácil manipulação
+    auto sctp = chrono::time_point_cast<chrono::system_clock::duration>(
+        ftime - filesystem::file_time_type::clock::now() + chrono::system_clock::now()
+    );
+    time_t cftime = chrono::system_clock::to_time_t(sctp);
+
+    // Converter para struct tm para quebrar a data e hora
+    tm* local_time = localtime(&cftime);
+    
+        // Imprimir no formato AAAAMMDDHHMM
+    ostringstream oss;
+    oss << put_time(local_time, "%Y%m%d%H%M");
+    sprintf(buffer, "%ld,%s", static_cast<long>(file -> tellg()), oss.str().c_str());
+    send(T_FILE_DESCRIPTOR, buffer);
+}
+
+int StopNWait::getFileSize(){
+    char* msg = message -> getData();
+
+    return atoi(strtok(msg, ","));
+}
+
+tm StopNWait::getFileData(){
+    char* msg = message -> getData();
+    strtok(msg, ",");
+    string data = strtok(msg, ",");
+    
+    tm tm = {};
+    istringstream ss(data);
+    ss >> get_time(&tm, "%Y%m%d%H%M");
+
+    return tm;
 }
 
 char* StopNWait::getDataStr(){

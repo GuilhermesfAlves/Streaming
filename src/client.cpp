@@ -6,6 +6,7 @@ Client::Client() : Streaming(CLIENT_SOCKET_STR){}
 int Client::run(){
 
     string path;
+    tm time;
     do {
         getUserAction();
         switch (action){
@@ -35,23 +36,34 @@ int Client::run(){
                 action = T_LIST;
                 break;
             } 
-            fileSize = single.getDataNumber();
+            fileSize = single.getFileSize();
+            time = single.getFileData();
             {
                 int fileStatus;
                 string command;
-                if ((fileStatus = window.tryBuildDataFile(CLIENT_CATHALOG_FOLDER, videoToDownload, fileSize)) != FILE_OPEN_SUCCESS){
-                    single.send(T_ERROR, fileStatus);
-                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                    if (fileStatus == FILE_OPEN_FAIL)
-                        cout << "Can't open file, try again later" << endl;
-                    else 
-                        cout << "Not enough space in disk" << endl;
-                    cout << "Press enter to continue" << endl;
-                    cin.get();
-                }
-                else {
-                    window.receive(SHORTEST_TIMEOUT, fileSize);
+                try{
+                    if ((fileStatus = window.tryBuildDataFile(CLIENT_CATHALOG_FOLDER, videoToDownload, fileSize, &time)) != FILE_OPEN_SUCCESS){
+                        single.send(T_ERROR, fileStatus);
+                        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                        if (fileStatus == FILE_OPEN_FAIL)
+                            cout << "Can't open file, try again later" << endl;
+                        else 
+                            cout << "Not enough space in disk" << endl;
+                        cout << "Press enter to continue" << endl;
+                        cin.get();
+                    }
+                    else {
+                        window.receive(SHORTEST_TIMEOUT, fileSize);
 
+                        command = "./vlc-wrapper.sh " + (string)CLIENT_CATHALOG_FOLDER + videoToDownload;
+                        system(command.c_str());
+                        ostringstream oss;
+                        oss << put_time(&time, "%Y%m%d%H%M");
+                        command = "touch -t " + oss.str() + (string)CLIENT_CATHALOG_FOLDER + videoToDownload;
+                        system(command.c_str());
+                    }
+                } catch(exception &e){
+                    single.send(T_ERROR, 3);
                     command = "./vlc-wrapper.sh " + (string)CLIENT_CATHALOG_FOLDER + videoToDownload;
                     system(command.c_str());
                 }

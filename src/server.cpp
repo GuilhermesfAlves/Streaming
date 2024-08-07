@@ -32,7 +32,7 @@ int Server::run(){
                 single.send(T_ERROR, ERROR_FILE_NOT_FOUND);
                 break;
             }
-            single.send(T_FILE_DESCRIPTOR, file -> tellg());
+            single.send(file, path);
             if (single.receive(OPTIONAL_TIMEOUT) == T_ERROR)
                 break;
             file -> seekg(0, ios::beg);
